@@ -1,0 +1,9 @@
+{
+  "name": "ah-haven-space-sprinters",
+  "scripts": {},
+  "env": {},
+  "formation": {},
+  "addons": [],
+  "buildpacks": [],
+  "stack": "heroku-18"
+}
