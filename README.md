@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mirest/ah-haven-space-sprinters.svg?branch=develop)](https://travis-ci.org/mirest/ah-haven-space-sprinters)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
