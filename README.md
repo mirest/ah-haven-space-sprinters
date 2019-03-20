@@ -9,6 +9,14 @@ by leveraging the modern web.
 
 ---
 
+## API documemation links
+
+[Swagger documentation](https://ah-haven-space-sprinters.herokuapp.com/swagger)
+
+
+[Core api documentation](https://ah-haven-space-sprinters.herokuapp.com/schema)
+
+
 ## API Spec
 The preferred JSON object to be returned by the API should be structured as follows:
 
@@ -392,7 +400,5 @@ No additional parameters required
 ### Get Tags
 
 `GET /api/tags`
-
-
 
 
