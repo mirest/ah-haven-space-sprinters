@@ -1,9 +1,7 @@
-[![Build Status](https://travis-ci.org/mirest/ah-haven-space-sprinters.svg?branch=develop)](https://travis-ci.org/mirest/ah-haven-space-sprinters)
+[![Build Status](https://travis-ci.org/mirest/ah-haven-space-sprinters.svg?branch=develop)](https://travis-ci.org/mirest/ah-haven-space-sprinters) [![Coverage Status](https://coveralls.io/repos/github/mirest/ah-haven-space-sprinters/badge.svg?branch=develop)](https://coveralls.io/github/mirest/ah-haven-space-sprinters?branch=develop) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/396fc4ef974d44a5a6045406ebbe4130)](https://www.codacy.com/app/ManuelDominic/ah-haven-space-sprinters?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mirest/ah-haven-space-sprinters&amp;utm_campaign=Badge_Grade)
 
 Authors Haven - A Social platform for the creative at heart.
 =======
-
-[![Build Status](https://travis-ci.org/mirest/ah-haven-space-sprinters.svg?branch=develop)](https://travis-ci.org/mirest/ah-haven-space-sprinters) [![Coverage Status](https://coveralls.io/repos/github/mirest/ah-haven-space-sprinters/badge.svg?branch=develop)](https://coveralls.io/github/mirest/ah-haven-space-sprinters?branch=develop) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/396fc4ef974d44a5a6045406ebbe4130)](https://www.codacy.com/app/ManuelDominic/ah-haven-space-sprinters?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mirest/ah-haven-space-sprinters&amp;utm_campaign=Badge_Grade)
 
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
