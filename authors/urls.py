@@ -15,9 +15,16 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
+from rest_framework_swagger.views import get_swagger_view
+from rest_framework.documentation import include_docs_urls
+
+core_schema_view = include_docs_urls(title='AH Haven Space Sprinters API')
+schema_view = get_swagger_view(title='AH Haven Space Sprinters API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('authors.apps.authentication.urls')),
+    path('swagger/',schema_view),
+    path('schema/',core_schema_view)
 ]
 
