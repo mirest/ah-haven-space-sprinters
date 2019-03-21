@@ -1,9 +1,16 @@
 {
   "name": "ah-haven-space-sprinters",
   "scripts": {},
-  "env": {},
+  "env": {"EMAIL_HOST_PASSWORD":{"required":true},
+          "EMAIL_HOST_USER":{"required":true},
+          "EMAIL_BACKEND":{"required":true},
+          "SECRET_KEY":{"required":true},
+          "STATIC_URL":{"required":true},
+          "DEBUG":{"required":true},
+          "ADMIN_URL":{"required":true},
+          "DJANGO_SETTINGS_MODULE":{"required":true}},
   "formation": {},
-  "addons": [],
+  "addons": ["heroku-postgresql"],
   "buildpacks": [],
   "stack": "heroku-18"
 }
