@@ -18,7 +18,7 @@ before_script:
   - python manage.py makemigrations
   - python manage.py migrate
 
-script: 
+script:
   - coverage run --source='authors' manage.py test
   - coverage report -m
 
