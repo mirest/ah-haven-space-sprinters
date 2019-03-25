@@ -95,3 +95,6 @@ db.sqlite3
 
 #windows variables
 env.bat
+
+#visual studiocode editor files
+.vscode/

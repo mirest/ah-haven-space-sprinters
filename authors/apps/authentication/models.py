@@ -1,14 +1,20 @@
+from datetime import datetime, timedelta
+
+import jwt
+
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
+
+from config.settings.default import SECRET_KEY
 
 
 class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
-    Django to create a `User` for free. 
+    Django to create a `User` for free.
 
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
@@ -112,3 +118,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+
+    def auth_token(self):
+        """creates a token for registration"""
+        self.encoded_jwt = jwt.encode(
+            {'username': self.username,
+             'exp': datetime.now() + timedelta(days=15)},
+            SECRET_KEY, algorithm='HS256').decode('utf-8')
+        return self.encoded_jwt
