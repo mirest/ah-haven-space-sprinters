@@ -1,5 +1,5 @@
 import jwt
-
+import re
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
@@ -13,12 +13,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # characters, and can not be read by the client.
     password = serializers.CharField(
         max_length=128,
-        min_length=8,
         write_only=True
     )
 
+    email = serializers.EmailField()
+    username = serializers.CharField()
     auth_token = serializers.CharField(max_length=255, read_only=True)
-
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
@@ -27,6 +27,37 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password', 'auth_token']
+    
+    @classmethod
+    def validate_password(cls, password):
+            # password to be of reasonable length, alphanumeric
+
+        if len(password) < 8: 
+            raise serializers.ValidationError("Password must be longer than 8 characters.")
+        elif re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password) is None:
+            raise serializers.ValidationError("Password should at least contain a number, capital and small letter.")
+        return password
+    
+    @classmethod
+    def validate_email(cls, email):
+            #we check that the same email is not registered more than once
+
+        check_email= User.objects.filter(email=email)
+        if check_email.exists():
+            raise serializers.ValidationError("Email already exists.")
+        return email
+    
+    @classmethod
+    def validate_username(cls, username):
+            #we check that the same username is not registered more than once
+        check_username= User.objects.filter(username=username)
+        if check_username.exists():
+            raise serializers.ValidationError("Username already exists.")
+        elif re.match(r"^([a-zA-Z\d]+[-_])*[a-zA-Z\d*]+$",username) is None:
+            raise serializers.ValidationError("username cannot be integers, have white spaces or symbols.")
+
+        return username
+    
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.

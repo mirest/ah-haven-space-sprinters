@@ -42,14 +42,20 @@ class TestUserRoutes(BaseTestClass):
             "A user with this email and password was not found.", str(resp.data))
 
     # test whether a token is generated on login
+    
     def test_login_user_login_token(self):
-        user=User.objects.create_user(username='sampleuser', email='user@sprinters.ug',password='butt3rfly1')
+        user=User.objects.create_user(username='sampleuser', email='user@sprinters.ug',password='Butt3rfly1')
         user.is_active=True
         user.save()
+        user_login_credentials = {
+            "user": {
+                "email": "user@sprinters.ug",
+                "password": "Butt3rfly1"
+            }}
 
         response = self.client.post(
             reverse('auth:login'),
-            data=self.user_data,
+            data=user_login_credentials,
             format='json')
         self.assertIn('auth_token', response.data)
         self.assertEqual(response.status_code, 200)

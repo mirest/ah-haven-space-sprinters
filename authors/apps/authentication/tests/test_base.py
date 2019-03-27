@@ -10,7 +10,7 @@ class BaseTestClass(TestCase):
             "user": {
                 "username": "sampleuser",
                 "email": "user@sprinters.ug",
-                "password": "butt3rfly1"
+                "password": "Butt3rfly1"
             }
         }
 
@@ -21,6 +21,28 @@ class BaseTestClass(TestCase):
 
             }
         }
+        self.same_email_user = {
+            "user": {
+                "username": "samuel",
+                "email": "user@sprinters.ug",
+                "password": "Samm1eboy"
+            }
+        }
+
+        self.same_username_user = {
+            "user": {
+                "username": "sampleuser",
+                "email": "samuel@gmail.com",
+                "password": "Robb1ezon"
+         } }
+
+        self.invalid_username = {
+            "user": {
+                "username": "min#*r",
+                "email": "minnie@gmail.com",
+                "password": "Robb1ezon"
+         } }
+
 
         self.update_user = {
             "user": {
