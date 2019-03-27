@@ -1,11 +1,8 @@
-from config.settings.default import *
+from .default import *
 
-DEBUG = True
-
-ALLOWED_HOSTS += ['127.0.0.1', 'localhost', '0.0.0.0:5000']
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost', '127.0.0.1:8000']
 
 INSTALLED_APPS += ('debug_toolbar',)
-
 
 DATABASES = {
     'default': {

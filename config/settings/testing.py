@@ -1,4 +1,4 @@
-from config.settings.default import *
+from .default import *
 
 
 ALLOWED_HOSTS += ['*']
@@ -18,10 +18,9 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )
 
-ALLOWED_HOSTS += ('127.0.0.1', 'localhost', '0.0.0.0:5000',)
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost', '127.0.0.1:8000']
 
-INSTALLED_APPS += ['debug_toolbar', 'django_extensions']
-
+INSTALLED_APPS += ('debug_toolbar', 'django_extensions',)
 
 MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 

@@ -1,11 +1,9 @@
 import dj_database_url
 import django_heroku
-
+from .default import *
 from config.settings.default import *
 
-DEBUG = False
-
-ALLOWED_HOSTS += ['.herokuapp.com']
+ALLOWED_HOSTS += ['.herokuapp.com', 'ah-haven-space-sprinters-pr-20.herokuapp.com','https://ah-haven-space-sprinters-pr-20.herokuapp.com']
 
 CACHES = {
     'default': {
@@ -15,7 +13,6 @@ CACHES = {
 }
 
 django_heroku.settings(locals(), test_runner=False)
-
 
 DATABASES = {
     'default': {}

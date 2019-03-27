@@ -17,9 +17,7 @@ urlpatterns = [
     path('api/', include(('authors.apps.articles.urls','articles'), namespace='article')),
     path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
     path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles')),
-    # path('social/', include('social_django.urls', namespace='social')),
     path('api/', include('authors.apps.socialauth.urls')),
-
 ]
 
 if settings.DEBUG:
