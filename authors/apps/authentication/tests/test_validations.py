@@ -1,9 +1,6 @@
 import json
 
 from django.urls import reverse
-from rest_framework import status
-
-from authors.apps.authentication.models import User
 
 from .test_base import BaseTestClass
 
@@ -28,12 +25,12 @@ class TestRegistrationValidation(BaseTestClass):
         }
         resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps({
-                                    "user":{
-                                        "username":"jake",
-                                        "email":"jake@gmail.com",
-                                        "password":"jake"
-                                    }
-                                }))
+                "user": {
+                    "username": "jake",
+                    "email": "jake@gmail.com",
+                    "password": "jake"
+                }
+            }))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn(
             "Password must be longer than 8 characters.", str(resp.data))
@@ -48,15 +45,14 @@ class TestRegistrationValidation(BaseTestClass):
         }
         resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps({
-                                    "user":{
-                                        "username":"naira",
-                                        "email":"naira@gmail.com",
-                                        "password":"dancinggal"
-                                    }
-                                }))
+                "user": {
+                    "username": "naira",
+                    "email": "naira@gmail.com",
+                    "password": "dancinggal"
+                }
+            }))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn("Password should at least contain a number, capital and small letter.", str(resp.data))
-
 
     def test_register_with_existing_email_fails(self):
         expected_response = {
@@ -67,13 +63,12 @@ class TestRegistrationValidation(BaseTestClass):
             }
         }
         self.client.post(reverse('auth:register'),
-                                content_type='application/json', data=json.dumps(self.user_data))
-        resp=self.client.post(reverse('auth:register'),
+                         content_type='application/json', data=json.dumps(self.user_data))
+        resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps(self.same_email_user))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn(
-             "Email already exists.", str(resp.data))
-
+            "Email already exists.", str(resp.data))
 
     def test_register_with_existing_username_fails(self):
         expected_response = {
@@ -84,12 +79,12 @@ class TestRegistrationValidation(BaseTestClass):
             }
         }
         self.client.post(reverse('auth:register'),
-                                content_type='application/json', data=json.dumps(self.user_data))
-        resp=self.client.post(reverse('auth:register'),
+                         content_type='application/json', data=json.dumps(self.user_data))
+        resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps(self.same_username_user))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn(
-           "Username already exists.", str(resp.data))
+            "Username already exists.", str(resp.data))
 
     def test_register_with_invalid_username_fails(self):
         expected_response = {
@@ -99,8 +94,8 @@ class TestRegistrationValidation(BaseTestClass):
                 ]
             }
         }
-        resp=self.client.post(reverse('auth:register'),
+        resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps(self.invalid_username))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn(
-           "username cannot be integers, have white spaces or symbols.", str(resp.data))
+            "username cannot be integers, have white spaces or symbols.", str(resp.data))

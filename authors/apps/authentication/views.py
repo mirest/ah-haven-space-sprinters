@@ -1,24 +1,28 @@
-import jwt
-from datetime import datetime, timedelta
+import json
+
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
+from rest_framework.generics import GenericAPIView, CreateAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, GenericAPIView
-import os
-from django.conf import settings
+
 from config.settings import default
-from django.urls import reverse
 from .backends import JWTAuthentication
-
-
-
+from .models import User
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, ResetEmailSerializer, PasswordResetSerializer
 )
+from .tokens import password_rest_token
 
 
 class RegistrationAPIView(APIView):
@@ -38,11 +42,11 @@ class RegistrationAPIView(APIView):
         serializer.save()
         email = serializer.data['email']
         verification_token = serializer.data['auth_token']
-        resp = RegistrationAPIView.verification_link(email,request,verification_token)
+        resp = RegistrationAPIView.verification_link(email, request, verification_token)
         return Response(resp, status=status.HTTP_201_CREATED)
 
     @staticmethod
-    def verification_link(email,request,token):
+    def verification_link(email, request, token):
         """
         method to send a verification link to a user
         """
@@ -55,32 +59,30 @@ class RegistrationAPIView(APIView):
         to_mail = [email]
         send_mail(subject, message, from_mail, to_mail, fail_silently=False)
         response_data = {
-            "msg":'Please check your email to verify your account verification has been sent to {}'.format(email)
+            "msg": 'Please check your email to verify your account verification has been sent to {}'.format(email)
         }
 
         return response_data
 
 
-class ActivationAPIView(GenericAPIView,JWTAuthentication):
+class ActivationAPIView(GenericAPIView, JWTAuthentication):
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 
-    def get(self,request,token):
+    def get(self, request, token):
         """
             Method to activate a user after they click link in their emails
         """
-        user,token=self._authenticate_credentials(request,token)
-        
-        if user.is_valid==False:
+        user, token = self._authenticate_credentials(request, token)
+
+        if user.is_valid == False:
             user.is_valid = True
             user.save()
-            return Response ({"message":"youve been verified","status":200},status=status.HTTP_200_OK)
+            return Response({"message": "youve been verified", "status": 200}, status=status.HTTP_200_OK)
         else:
-            return Response({'msg':'account has already been verified'},status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'msg': 'account has already been verified'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -124,3 +126,66 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResetPasswordEmail(CreateAPIView):
+    """Password reset emailing with uid and reset token"""
+    permission_classes = (AllowAny,)
+    serializer_class = ResetEmailSerializer
+
+    def post(self, request, *args, **kwargs):
+        """Returns message for reset password email"""
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = get_object_or_404(User, email=data['email'])
+            current_site = get_current_site(request)
+            token = password_rest_token.make_token(user),
+            uidb64 = urlsafe_base64_encode(force_bytes(data['email'])).decode()
+            body = json.dumps({
+                'message': 'Please use the url below to rest your password,\
+                            This expires after an hour, Thank you.',
+                'domain': current_site.domain + f'/api/reset/{uidb64}/{token[0]}',
+            })
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to_email = data['email']
+            subject = 'Confirm Your Article Account Password Reset'
+            send_mail(subject, body, from_email, [to_email], fail_silently=False)
+            response = {'message': 'Please check your email to confirm rest password',
+                        'status_code': status.HTTP_200_OK}
+        except Exception as e:
+            response = {'error': e, 'status_code': status.HTTP_400_BAD_REQUEST}
+        return Response(response, content_type='text/json')
+
+
+class ResetPasswordConfirm(CreateAPIView):
+    """Password resetting with a provided uid and token"""
+
+    serializer_class = PasswordResetSerializer
+
+    @classmethod
+    def get_queryset(cls):
+        return None
+
+    def post(self, request, uidb64, token):
+        """Returns Password reset success"""
+        data = request.data
+        if data['password1'] != data['password2']:
+            response = {'error': 'Password donot match, try again',
+                        'status_code': status.HTTP_400_BAD_REQUEST}
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = get_object_or_404(User, email=uid)
+            auth = password_rest_token.check_token(user, token)
+            serializer = self.serializer_class(auth, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            user.password = user.set_password(data['password1'])
+            user.set_password(data['password1'])
+            user.save()
+            response = {'message': 'Password successfully updated',
+                        'status_code': status.HTTP_200_OK}
+        except Exception as e:
+            response = {'error': e, 'message': 'Password reset failed',
+                            'status_code': status.HTTP_400_BAD_REQUEST}
+        return Response(response, content_type='text/json')
