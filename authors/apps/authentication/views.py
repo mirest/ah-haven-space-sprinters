@@ -1,11 +1,19 @@
 import jwt
-
+from datetime import datetime, timedelta
+from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, GenericAPIView
+import os
+from django.conf import settings
+from config.settings import default
+from django.urls import reverse
+from .backends import JWTAuthentication
+
+
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -28,10 +36,51 @@ class RegistrationAPIView(APIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        email = serializer.data['email']
+        verification_token = serializer.data['auth_token']
+        resp = RegistrationAPIView.verification_link(email,request,verification_token)
+        return Response(resp, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @staticmethod
+    def verification_link(email,request,token):
+        """
+        method to send a verification link to a user
+        """
+        domain = request.get_host()
+        url = reverse('auth:verify', kwargs={'token': token})
+        link = f'{domain}{url}'
+        subject = "Activation for your account"
+        message = f'Please Activate your account below.\n{link}'
+        from_mail = default.DEFAULT_FROM_EMAIL
+        to_mail = [email]
+        send_mail(subject, message, from_mail, to_mail, fail_silently=False)
+        response_data = {
+            "msg":'Please check your email to verify your account verification has been sent to {}'.format(email)
+        }
+
+        return response_data
 
 
+class ActivationAPIView(GenericAPIView,JWTAuthentication):
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+
+    def get(self,request,token):
+        """
+            Method to activate a user after they click link in their emails
+        """
+        user,token=self._authenticate_credentials(request,token)
+        
+        if user.is_valid==False:
+            user.is_valid = True
+            user.save()
+            return Response ({"message":"youve been verified","status":200},status=status.HTTP_200_OK)
+        else:
+            return Response({'msg':'account has already been verified'},status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+        
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)

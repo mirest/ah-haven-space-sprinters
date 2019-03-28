@@ -114,6 +114,11 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'This user has been deactivated.'
             )
+        # This flag is raised when a user attempts to login without verifying their accounts
+        if not user.is_valid:
+            raise serializers.ValidationError(
+                'This user has not been verified, please check your email to verify.'
+            )
 
         # The `validate` method should return a dictionary of validated data.
         # This is the data that is passed to the `create` and `update` methods
@@ -140,7 +145,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'auth_token')
+
+        read_only_feilds = ('auth_token',)
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password

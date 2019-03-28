@@ -112,3 +112,13 @@ REST_FRAMEWORK = {
          'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+#sendgrid settings
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
