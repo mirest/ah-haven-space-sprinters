@@ -1,6 +1,7 @@
 from django.test import TestCase
 from authors.apps.authentication.models import User
 from rest_framework.test import APIClient
+from django.urls import reverse
 
 
 class BaseTestClass(TestCase):
@@ -21,4 +22,27 @@ class BaseTestClass(TestCase):
             }
         }
 
+        self.update_user = {
+            "user": {
+                "username": "update",
+
+            }
+        }
+
         self.client = APIClient()
+
+    def auth_header_token(self):
+        self.client.post(
+            reverse('auth:register'),
+            data=self.user_data,
+            format='json')
+
+        response = self.client.post(
+            reverse('auth:login'),
+            data=self.user_data,
+            format='json')
+
+        self.test_token = response.data.get("auth_token")
+        self.auth_header = 'Bearer {}'.format(self.test_token)
+
+        return self.auth_header
