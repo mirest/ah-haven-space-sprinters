@@ -1,8 +1,8 @@
 import os
+
 import django_heroku
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
@@ -37,12 +37,6 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = []
-
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-
-EMAIL_USE_TLS = True
 
 ADMIN_URL = os.environ.get('ADMIN_URL')
 
@@ -91,7 +85,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = os.environ.get('STATIC_URL')
@@ -109,11 +102,10 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
-         'authors.apps.authentication.backends.JWTAuthentication',
+        'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
 
-#sendgrid settings
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')

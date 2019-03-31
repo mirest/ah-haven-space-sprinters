@@ -51,6 +51,14 @@ class BaseTestClass(TestCase):
             }
         }
 
+        self.reset_user_password = {
+            'user': {
+                'username': 'sprintersspace',
+                'password': 'sprintersspacePassword',
+                'email': 'sprintersspace@gmail.com'
+            }
+        }
+
         self.client = APIClient()
 
     def auth_header_token(self):

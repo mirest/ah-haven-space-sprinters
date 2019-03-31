@@ -1,14 +1,12 @@
 from datetime import datetime, timedelta
 
 import jwt
-
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
 
 from config.settings.default import SECRET_KEY
-from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -71,8 +69,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     # but we can still analyze the data.
     is_active = models.BooleanField(default=True)
 
-    #The is_valid flag is going to be used to determine who has verified their 
-    #accounts on registration 
+    # The is_valid flag is going to be used to determine who has verified their
+    # accounts on registration
     is_valid = models.BooleanField(default=False)
 
     # The `is_staff` flag is expected by Django to determine who can and cannot
@@ -93,7 +91,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    
 
     # Tells Django that the UserManager class defined above should manage
     # objects of this type.
