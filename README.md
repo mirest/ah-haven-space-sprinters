@@ -175,17 +175,15 @@ Endpoints:
 
 ### Authentication:
 
-`POST /api/users/login`
+`POST /api/users/login/`
 
 Example request body:
 
 ```source-json
 {
-  "user":{
     "email": "jake@jake.jake",
     "password": "jakejake"
-  }
-}
+ }
 ```
 
 No authentication required, returns a User
@@ -194,17 +192,15 @@ Required fields: `email`, `password`
 
 ### Registration:
 
-`POST /api/users`
+`POST /api/users/`
 
 Example request body:
 
 ```source-json
 {
-  "user":{
     "username": "Jacob",
     "email": "jake@jake.jake",
     "password": "jakejake"
-  }
 }
 ```
 
@@ -214,13 +210,13 @@ Required fields: `email`, `username`, `password`
 
 ### Get Current User
 
-`GET /api/user`
+`GET /api/user/`
 
 Authentication required, returns a User that's the current user
 
 ### Update User
 
-`PUT /api/user`
+`PUT /api/user/`
 
 Example request body:
 
@@ -240,10 +236,23 @@ Accepted fields: `email`, `username`, `password`, `image`, `bio`
 
 ### Get Profile
 
-`GET /api/profiles/:username`
+`GET /api/profiles/<username>`
 
 Authentication optional, returns a Profile
 
+### Edit Profile
+`PUT /api/profiles/<username>/edit`
+Example request body:
+```source-json
+
+{
+        "first_name": "Jacob",
+        "last_name": "Johnson",
+        "bio": "Live love laugh",
+        "date_of_birth": "1992-02-06",
+        "image": "https://unsplash.com/photos/vC_Q127x8Kg"
+    }
+```
 ### Follow user
 
 `POST /api/profiles/:username/follow`

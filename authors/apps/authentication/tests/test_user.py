@@ -1,5 +1,6 @@
-from authors.apps.authentication.models import User, UserManager
 from django.test import TestCase
+
+from authors.apps.authentication.models import User
 
 
 class TestUserModel(TestCase):
@@ -32,5 +33,3 @@ class TestUserModel(TestCase):
         self.user = User.objects.create_user(
             username="rhytah", email="sprinter1@space.com", password='mypassword')
         self.assertEqual('rhytah', self.user.get_full_name)
-
-        
