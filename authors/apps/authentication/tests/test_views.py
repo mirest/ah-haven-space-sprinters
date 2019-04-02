@@ -184,3 +184,4 @@ class TestUserRoutes(BaseTestClass):
                    'status_code': 200}
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, message)
+

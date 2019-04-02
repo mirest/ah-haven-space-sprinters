@@ -240,9 +240,12 @@ Accepted fields: `email`, `username`, `password`, `image`, `bio`
 
 ### Get Profile
 
-`GET /api/profiles/:username`
+`GET /api/profiles/<username>`
 
 Authentication optional, returns a Profile
+
+### Edit Profile
+`PUT /api/profiles/<username>/edit`
 
 ### Follow user
 

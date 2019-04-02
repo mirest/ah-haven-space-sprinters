@@ -13,6 +13,8 @@ urlpatterns = [
     path('api/', include(('authors.apps.authentication.urls','authentication'), namespace='auth')),
     path('', schema_view),
     path('schema/', core_schema_view),
+    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
+
 
 ]
 

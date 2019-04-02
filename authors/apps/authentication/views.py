@@ -189,3 +189,4 @@ class ResetPasswordConfirm(CreateAPIView):
             response = {'error': e, 'message': 'Password reset failed',
                             'status_code': status.HTTP_400_BAD_REQUEST}
         return Response(response, content_type='text/json')
+
