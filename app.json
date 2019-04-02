@@ -9,7 +9,13 @@
           "SENDGRID_API_KEY":{"required":true},
           "DEBUG":{"required":true},
           "ADMIN_URL":{"required":true},
-          "DJANGO_SETTINGS_MODULE":{"required":true}},
+          "DEFAULT_FROM_EMAIL":{"required":true},
+          "EMAIL_PORT":{"required":true},
+          "DJANGO_SETTINGS_MODULE":{"required":true},
+          "EMAIL_USE_TLS":{"required":true},
+          "EMAIL_HOST":{"required":true}},
+
+
   "formation": {},
   "addons": ["heroku-postgresql"],
   "buildpacks": [],
