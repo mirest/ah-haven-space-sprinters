@@ -54,10 +54,9 @@ class TestUserRoutes(BaseTestClass):
         user.is_active = True
         user.save()
         user_login_credentials = {
-            "user": {
                 "email": "user@sprinters.ug",
                 "password": "Butt3rfly1"
-            }}
+            }
 
         response = self.client.post(
             reverse('auth:login'),

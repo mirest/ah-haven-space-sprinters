@@ -9,11 +9,9 @@ from django.utils.encoding import force_bytes
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.generics import GenericAPIView, CreateAPIView
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView,RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from config.settings import default
 from .backends import JWTAuthentication
@@ -25,14 +23,14 @@ from .serializers import (
 from .tokens import password_rest_token
 
 
-class RegistrationAPIView(APIView):
+class RegistrationAPIView(CreateAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
     def post(self, request):
-        user = request.data.get('user', {})
+        user = request.data
 
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
@@ -68,6 +66,7 @@ class RegistrationAPIView(APIView):
 class ActivationAPIView(GenericAPIView, JWTAuthentication):
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
+    renderer_classes = (UserJSONRenderer,)
 
     def get(self, request, token):
         """
@@ -83,13 +82,13 @@ class ActivationAPIView(GenericAPIView, JWTAuthentication):
             return Response({'msg': 'account has already been verified'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginAPIView(APIView):
+class LoginAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
     def post(self, request):
-        user = request.data.get('user', {})
+        user = request.data
 
         # Notice here that we do not call `serializer.save()` like we did for
         # the registration endpoint. This is because we don't actually have
@@ -132,6 +131,7 @@ class ResetPasswordEmail(CreateAPIView):
     """Password reset emailing with uid and reset token"""
     permission_classes = (AllowAny,)
     serializer_class = ResetEmailSerializer
+    renderer_classes = (UserJSONRenderer,)
 
     def post(self, request, *args, **kwargs):
         """Returns message for reset password email"""
@@ -163,6 +163,7 @@ class ResetPasswordConfirm(CreateAPIView):
     """Password resetting with a provided uid and token"""
 
     serializer_class = PasswordResetSerializer
+    renderer_classes = (UserJSONRenderer,)
 
     @classmethod
     def get_queryset(cls):
@@ -186,7 +187,7 @@ class ResetPasswordConfirm(CreateAPIView):
             response = {'message': 'Password successfully updated',
                         'status_code': status.HTTP_200_OK}
         except Exception as e:
-            response = {'error': e, 'message': 'Password reset failed',
+            response = {'error': 'Password reset failed',
                             'status_code': status.HTTP_400_BAD_REQUEST}
         return Response(response, content_type='text/json')
 

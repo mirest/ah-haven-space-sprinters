@@ -9,60 +9,47 @@ from django.urls import reverse
 class BaseTestClass(TestCase):
     def setUp(self):
         self.user_data = {
-            "user": {
                 "username": "sampleuser",
                 "email": "user@sprinters.ug",
                 "password": "Butt3rfly1"
-            }
         }
 
         self.invalid_user = {
-            "user": {
                 "email": "hacker@someplace.cc",
                 "password": "123passsing"
-
-            }
         }
         self.same_email_user = {
-            "user": {
                 "username": "samuel",
                 "email": "user@sprinters.ug",
                 "password": "Samm1eboy"
-            }
         }
 
         self.same_username_user = {
-            "user": {
                 "username": "sampleuser",
                 "email": "samuel@gmail.com",
                 "password": "Robb1ezon"
-         } }
+         } 
 
         self.invalid_username = {
-            "user": {
                 "username": "min#*r",
                 "email": "minnie@gmail.com",
                 "password": "Robb1ezon"
-            } 
         }
         
         self.update_user = {
-            "user": {
+            "user":{
                 "username": "update",
-
-            }
-        }
+        }}
 
         self.client = APIClient()
         self.test_user = User.objects.create_user(
             username='testinguser',
             email='testemail@test.com', password='Test1ngwork')
         self.verified_user_login_credentials = {
-            "user": {
                 "email": "testemail@test.com",
                 "password": "Test1ngwork"
             }
-        }
+
 
         self.profile_data = {
             "first_name": "Keira",
@@ -76,10 +63,8 @@ class BaseTestClass(TestCase):
             data=self.user_data,
             format='json')
         self.login_credentials={
-            "user": {
                 "email": "user@sprinters.ug",
                 "password": "Butt3rfly1"
-            }
         }
 
         response = self.client.post(
