@@ -3,6 +3,8 @@ from authors.apps.authentication.tests.test_base import BaseTestClass
 from rest_framework import status
 
 from django.urls import reverse
+
+
 class TestUserProfile(BaseTestClass):
 
     def test_retrieve_profile_without_logging_in_fails(self):
@@ -15,7 +17,7 @@ class TestUserProfile(BaseTestClass):
             reverse('auth:login'),
             content_type='application/json',
             data=json.dumps(self.verified_user_login_credentials))
-             
+
         response = self.client.get(
             '/api/profiles/sampleuser',
             content_type='application/json',
@@ -36,5 +38,15 @@ class TestUserProfile(BaseTestClass):
             content_type='application/json',
             data=json.dumps(self.profile_data),
             HTTP_AUTHORIZATION=self.verified_user_login_token()
-            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_not_authenticated_user_view_author_profiles_fails(self):
+        response = self.client.get(reverse('profiles:profile-list'))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_authenticated_user_view_author_profiles_succeeds(self):
+        response = self.client.get(
+            reverse('profiles:profile-list'),
+            HTTP_AUTHORIZATION=self.verified_user_login_token())
         self.assertEqual(response.status_code, status.HTTP_200_OK)

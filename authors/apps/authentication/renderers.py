@@ -3,6 +3,4 @@ from .default_renderer import BaseRenderer
 
 
 class UserJSONRenderer(BaseRenderer):
-    data='user'
-    
-    
+    data = 'user'

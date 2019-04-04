@@ -24,7 +24,7 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=120, blank=True, null=True)
     date_of_birth = models.DateField(_("Date"), blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    image = models.URLField(blank=True,max_length=200, default="url")
+    image = models.URLField(blank=True, max_length=200, default="url")
     following = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

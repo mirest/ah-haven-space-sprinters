@@ -17,16 +17,22 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Profile',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('first_name', models.CharField(blank=True, max_length=120, null=True)),
-                ('last_name', models.CharField(blank=True, max_length=120, null=True)),
-                ('date_of_birth', models.DateField(blank=True, null=True, verbose_name='Date')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
+                ('first_name', models.CharField(
+                    blank=True, max_length=120, null=True)),
+                ('last_name', models.CharField(
+                    blank=True, max_length=120, null=True)),
+                ('date_of_birth', models.DateField(
+                    blank=True, null=True, verbose_name='Date')),
                 ('bio', models.TextField(blank=True, null=True)),
                 ('image', models.URLField(null=True)),
                 ('following', models.BooleanField(default=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

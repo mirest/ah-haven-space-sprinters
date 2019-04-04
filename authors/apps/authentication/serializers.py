@@ -34,9 +34,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # password to be of reasonable length, alphanumeric
 
         if len(password) < 8:
-            raise serializers.ValidationError("Password must be longer than 8 characters.")
+            raise serializers.ValidationError(
+                "Password must be longer than 8 characters.")
         elif re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password) is None:
-            raise serializers.ValidationError("Password should at least contain a number, capital and small letter.")
+            raise serializers.ValidationError(
+                "Password should at least contain a number, capital and small letter.")
         return password
 
     @classmethod
@@ -55,7 +57,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if check_username.exists():
             raise serializers.ValidationError("Username already exists.")
         elif re.match(r"^([a-zA-Z\d]+[-_])*[a-zA-Z\d*]+$", username) is None:
-            raise serializers.ValidationError("username cannot be integers, have white spaces or symbols.")
+            raise serializers.ValidationError(
+                "username cannot be integers, have white spaces or symbols.")
 
         return username
 
