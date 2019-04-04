@@ -14,6 +14,7 @@ urlpatterns = [
     path('swagger/', schema_view),
     path('', core_schema_view),
     path('api/', include(('authors.apps.articles.urls','articles'), namespace='article')),
+    path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
     path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
 
 
