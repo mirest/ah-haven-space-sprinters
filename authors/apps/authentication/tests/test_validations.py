@@ -25,11 +25,9 @@ class TestRegistrationValidation(BaseTestClass):
         }
         resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps({
-                "user": {
                     "username": "jake",
                     "email": "jake@gmail.com",
                     "password": "jake"
-                }
             }))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn(
@@ -45,11 +43,9 @@ class TestRegistrationValidation(BaseTestClass):
         }
         resp = self.client.post(reverse('auth:register'),
                                 content_type='application/json', data=json.dumps({
-                "user": {
                     "username": "naira",
                     "email": "naira@gmail.com",
                     "password": "dancinggal"
-                }
             }))
         self.assertDictEqual(resp.data, expected_response)
         self.assertIn("Password should at least contain a number, capital and small letter.", str(resp.data))
