@@ -9,7 +9,11 @@ from django.utils.encoding import force_bytes
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.generics import GenericAPIView, CreateAPIView,RetrieveUpdateAPIView
+from rest_framework.generics import (
+    GenericAPIView,
+    CreateAPIView,
+    RetrieveUpdateAPIView
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -18,7 +22,11 @@ from .backends import JWTAuthentication
 from .models import User
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, ResetEmailSerializer, PasswordResetSerializer
+    LoginSerializer,
+    RegistrationSerializer,
+    UserSerializer,
+    ResetEmailSerializer,
+    PasswordResetSerializer
 )
 from .tokens import password_rest_token
 
@@ -40,7 +48,8 @@ class RegistrationAPIView(CreateAPIView):
         serializer.save()
         email = serializer.data['email']
         verification_token = serializer.data['auth_token']
-        resp = RegistrationAPIView.verification_link(email, request, verification_token)
+        resp = RegistrationAPIView.verification_link(
+            email, request, verification_token)
         return Response(resp, status=status.HTTP_201_CREATED)
 
     @staticmethod
@@ -57,9 +66,9 @@ class RegistrationAPIView(CreateAPIView):
         to_mail = [email]
         send_mail(subject, message, from_mail, to_mail, fail_silently=False)
         response_data = {
-            "msg": 'Please check your email to verify your account verification has been sent to {}'.format(email)
+            "msg": 'Please check your email to verify your account '
+            'verification has been sent to {}'.format(email)
         }
-
         return response_data
 
 
@@ -74,12 +83,14 @@ class ActivationAPIView(GenericAPIView, JWTAuthentication):
         """
         user, token = self._authenticate_credentials(request, token)
 
-        if user.is_valid == False:
+        if not user.is_valid:
             user.is_valid = True
             user.save()
-            return Response({"message": "youve been verified", "status": 200}, status=status.HTTP_200_OK)
+            return Response({"message": "youve been verified",
+                             "status": 200}, status=status.HTTP_200_OK)
         else:
-            return Response({'msg': 'account has already been verified'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'msg': 'account has already been verified'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(CreateAPIView):
@@ -151,9 +162,11 @@ class ResetPasswordEmail(CreateAPIView):
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = data['email']
             subject = 'Confirm Your Article Account Password Reset'
-            send_mail(subject, body, from_email, [to_email], fail_silently=False)
-            response = {'message': 'Please check your email to confirm rest password',
-                        'status_code': status.HTTP_200_OK}
+            send_mail(subject, body, from_email, [
+                to_email], fail_silently=False)
+            response = {
+                'message': 'Please check your email to confirm rest password',
+                'status_code': status.HTTP_200_OK}
         except Exception as e:
             response = {'error': e, 'status_code': status.HTTP_400_BAD_REQUEST}
         return Response(response, content_type='text/json')
@@ -166,28 +179,30 @@ class ResetPasswordConfirm(CreateAPIView):
     renderer_classes = (UserJSONRenderer,)
 
     @classmethod
-    def get_queryset(cls):
-        return None
-
-    def post(self, request, uidb64, token):
+    def post(cls, request, uidb64, token):
         """Returns Password reset success"""
         data = request.data
         if data['password1'] != data['password2']:
-            response = {'error': 'Password donot match, try again',
-                        'status_code': status.HTTP_400_BAD_REQUEST}
+            response = {
+                'error': 'Password donot match, try again',
+                'status_code': status.HTTP_400_BAD_REQUEST}
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = get_object_or_404(User, email=uid)
             auth = password_rest_token.check_token(user, token)
-            serializer = self.serializer_class(auth, data=data, partial=True)
+            serializer = cls.serializer_class(auth, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             user.password = user.set_password(data['password1'])
             user.set_password(data['password1'])
             user.save()
-            response = {'message': 'Password successfully updated',
-                        'status_code': status.HTTP_200_OK}
+            response = {
+                'message': 'Password successfully updated',
+                'status_code': status.HTTP_200_OK}
         except Exception as e:
-            response = {'error': 'Password reset failed',
-                            'status_code': status.HTTP_400_BAD_REQUEST}
-        return Response(response, content_type='text/json')
-
+            response = {
+                'error': 'Password reset failed',
+                'status_code': status.HTTP_400_BAD_REQUEST}
+        return Response(
+            response,
+            content_type='text/json',
+            status=response['status_code'])

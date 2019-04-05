@@ -10,12 +10,11 @@ schema_view = get_swagger_view(title='AH Haven Space Sprinters API')
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
-    path('api/', include(('authors.apps.authentication.urls','authentication'), namespace='auth')),
+    path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='auth')),
     path('swagger/', schema_view),
     path('', core_schema_view),
-    path('api/', include(('authors.apps.articles.urls','articles'), namespace='article')),
-    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
-
+    path('api/', include(('authors.apps.articles.urls', 'articles'), namespace='article')),
+    path('api/profiles/', include(('authors.apps.profiles.urls', 'profiles'), namespace='profiles'))
 
 ]
 

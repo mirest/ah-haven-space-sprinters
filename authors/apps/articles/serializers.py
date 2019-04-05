@@ -1,11 +1,7 @@
-import re
-
-from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from .models import Article
-
 from authors.apps.profiles.serializers import UserProfileSerializer
+from .models import Article
 
 
 class ArticleSerializer(serializers.Serializer):
@@ -24,14 +20,16 @@ class ArticleSerializer(serializers.Serializer):
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
 
-        fields = ['title', 'description', 'body', 'image','slug', 'favourited', 'created_at', 'updated_at', 'author',]
+        fields = ['title', 'description', 'body', 'image', 'slug',
+                  'favourited', 'created_at', 'updated_at', 'author', ]
 
-
-    def create(self, validated_data):
-        author = self.context.get('author', None)
+    @classmethod
+    def create(cls, validated_data):
+        author = cls.context.get('author', None)
         return Article.objects.create(author=author, **validated_data)
 
-    def update(self, instance, validated_data):
+    @classmethod
+    def update(cls, instance, validated_data):
         """Performs an update on a Article"""
 
         for (key, value) in validated_data.items():
