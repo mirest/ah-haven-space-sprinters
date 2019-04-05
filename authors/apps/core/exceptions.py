@@ -17,7 +17,7 @@ def core_exception_handler(exc, context):
 
     if exception_class in handlers:
         # If this exception is one that we can handle, handle it. Otherwise,
-        # return the response generated earlier by the default exception 
+        # return the response generated earlier by the default exception
         # handler.
         return handlers[exception_class](exc, context, response)
 

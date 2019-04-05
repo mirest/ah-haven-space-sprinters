@@ -9,7 +9,11 @@ from django.utils.encoding import force_bytes
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.generics import GenericAPIView, CreateAPIView,RetrieveUpdateAPIView
+from rest_framework.generics import (
+    GenericAPIView,
+    CreateAPIView,
+    RetrieveUpdateAPIView
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -18,7 +22,11 @@ from .backends import JWTAuthentication
 from .models import User
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, ResetEmailSerializer, PasswordResetSerializer
+    LoginSerializer,
+    RegistrationSerializer,
+    UserSerializer,
+    ResetEmailSerializer,
+    PasswordResetSerializer
 )
 from .tokens import password_rest_token
 
@@ -40,7 +48,8 @@ class RegistrationAPIView(CreateAPIView):
         serializer.save()
         email = serializer.data['email']
         verification_token = serializer.data['auth_token']
-        resp = RegistrationAPIView.verification_link(email, request, verification_token)
+        resp = RegistrationAPIView.verification_link(
+            email, request, verification_token)
         return Response(resp, status=status.HTTP_201_CREATED)
 
     @staticmethod
@@ -151,7 +160,8 @@ class ResetPasswordEmail(CreateAPIView):
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = data['email']
             subject = 'Confirm Your Article Account Password Reset'
-            send_mail(subject, body, from_email, [to_email], fail_silently=False)
+            send_mail(subject, body, from_email, [
+                      to_email], fail_silently=False)
             response = {'message': 'Please check your email to confirm rest password',
                         'status_code': status.HTTP_200_OK}
         except Exception as e:
@@ -188,6 +198,5 @@ class ResetPasswordConfirm(CreateAPIView):
                         'status_code': status.HTTP_200_OK}
         except Exception as e:
             response = {'error': 'Password reset failed',
-                            'status_code': status.HTTP_400_BAD_REQUEST}
+                        'status_code': status.HTTP_400_BAD_REQUEST}
         return Response(response, content_type='text/json')
-
