@@ -15,6 +15,7 @@ from rest_framework.response import Response
 
 from config.settings import default
 from .models import Article
+from .pagination import ArticleOffsetPagination
 from .renderers import ArticleJSONRenderer
 from .serializers import (
      ArticleSerializer
@@ -27,9 +28,11 @@ from authors.apps.authentication.models import User
 class ArticleView(ListCreateAPIView):
     """creating, viewing , deleting and updating articles"""
 
+    queryset = Article.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ArticleJSONRenderer, )
     serializer_class = ArticleSerializer
+    pagination_class = ArticleOffsetPagination
 
 
     def post(self, request):
@@ -43,11 +46,6 @@ class ArticleView(ListCreateAPIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request):
-        queryset = Article.objects.all()
-        # the many param informs the serializer that it will be serializing more than a single article.
-        serializer = self.serializer_class(queryset, many=True)
-        return Response({"articles": serializer.data})
 
 class ArticleRetrieveUpdateDelete(RetrieveUpdateDestroyAPIView):
 
