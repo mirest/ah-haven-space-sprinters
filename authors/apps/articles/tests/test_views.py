@@ -96,3 +96,28 @@ class TestUserRoutes(BaseTestClass):
             reverse('article:get_article', kwargs={'slug': "how-to-train-your-dragon"}), format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(str(response.data['read_time']), "4 mins")
+
+    def test_share_facebook_link(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data, format='json')
+        response = self.client.post(
+            reverse('article:share_facebook', kwargs={'slug':"how-to-train-your-dragon"}), format='json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_share_twitter_link(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data, format='json')
+        response = self.client.post(
+            reverse('article:share_twitter', kwargs={'slug':"how-to-train-your-dragon"}), format='json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_share_article_via_mail(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data, format='json')
+        response = self.client.post(
+            reverse('article:share_email', kwargs={'slug':"how-to-train-your-dragon"}), data=self.email_share, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Your article has been shared successfully', str(response.data))

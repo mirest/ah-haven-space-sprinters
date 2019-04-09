@@ -58,3 +58,13 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    class Meta:
+        # List all of the fields that could possibly be included in a request
+        # or response, including fields specified explicitly above.
+
+        fields = ['email', ]
