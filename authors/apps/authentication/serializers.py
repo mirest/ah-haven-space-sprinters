@@ -62,7 +62,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         return username
 
-    def create(self, validated_data):
+    @classmethod
+    def create(cls, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
 
@@ -73,7 +74,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128, write_only=True)
     auth_token = serializers.CharField(max_length=225, read_only=True)
 
-    def validate(self, data):
+    @classmethod
+    def validate(cls, data):
         # The `validate` method is where we make sure that the current
         # instance of `LoginSerializer` has "valid". In the case of logging a
         # user in, this means validating that they've provided an email
@@ -117,7 +119,8 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'This user has been deactivated.'
             )
-        # This flag is raised when a user attempts to login without verifying their accounts
+        # This flag is raised when a user attempts to login without verifying
+        # their accounts
         if not user.is_valid:
             raise serializers.ValidationError(
                 'This user has not been verified, please check your email to verify.'
@@ -160,7 +163,8 @@ class UserSerializer(serializers.ModelSerializer):
         # `max_length` properties too, but that isn't the case for the token
         # field.
 
-    def update(self, instance, validated_data):
+    @classmethod
+    def update(cls, instance, validated_data):
         """Performs an update on a User."""
 
         # Passwords should not be handled with `setattr`, unlike other fields.
@@ -195,7 +199,7 @@ class ResetEmailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
 
     @classmethod
-    def validate_email(self, value):
+    def validate_email(cls, value):
         try:
             valid_email = User.objects.get(email=value)
         except Exception:

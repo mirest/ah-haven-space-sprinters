@@ -1,12 +1,9 @@
-from datetime import date
-
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from authors.apps.authentication.models import User
-
 
 UserModel = getattr(settings, "AUTH_USER_MODEL", User)
 
@@ -45,3 +42,15 @@ def user_post_save_receiver(instance, created, *args, **kwargs):
 
 
 post_save.connect(user_post_save_receiver, sender=User)
+
+
+class Follower(models.Model):
+    """
+    Followers model class holding users and their followers,
+     activities carriedout by a user are being followed.
+    """
+    author = models.CharField(max_length=254)
+    follow = models.CharField(max_length=254)
+
+    class meta:
+        unique_together = ('author', 'follow')

@@ -1,4 +1,3 @@
-import json
 from .default_renderer import BaseRenderer
 
 
