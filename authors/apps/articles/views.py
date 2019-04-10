@@ -34,7 +34,6 @@ class ArticleView(ListCreateAPIView):
     serializer_class = ArticleSerializer
     pagination_class = ArticleOffsetPagination
 
-
     def post(self, request):
         serializer_context = {'author': request.user.profile}
         article = request.data

@@ -4,11 +4,19 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from .models import Article
-
+from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import UserProfileSerializer
+from authors.apps.utilities.estimators import article_read_time
 
 
-class ArticleSerializer(serializers.Serializer):
+class AuthorProfileSerializer(UserProfileSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ('bio', 'username', 'image', 'following', )
+
+
+class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=120)
     description = serializers.CharField()
     body = serializers.CharField()
@@ -16,8 +24,9 @@ class ArticleSerializer(serializers.Serializer):
     created_at = serializers.CharField(read_only=True)
     updated_at = serializers.CharField(read_only=True)
     favourited = serializers.CharField(read_only=True)
-    author = UserProfileSerializer(read_only=True)
+    author = AuthorProfileSerializer(read_only=True)
     image = serializers.URLField(allow_blank=True, required=False)
+    read_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -25,7 +34,12 @@ class ArticleSerializer(serializers.Serializer):
         # or response, including fields specified explicitly above.
 
         fields = ['title', 'description', 'body', 'image', 'slug',
-                  'favourited', 'created_at', 'updated_at', 'author', ]
+                  'favourited', 'created_at', 'updated_at', 'author',
+                  'read_time', ]
+
+    @classmethod
+    def get_read_time(self, obj):
+        return article_read_time(obj.body)
 
     def create(self, validated_data):
         author = self.context.get('author', None)

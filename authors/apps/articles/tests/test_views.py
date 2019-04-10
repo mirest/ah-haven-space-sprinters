@@ -78,3 +78,21 @@ class TestUserRoutes(BaseTestClass):
             reverse('article:get_article', kwargs={'slug':"how-to-train-your-dragon88"}), data=self.update_data, format='json')
         self.assertEqual(response.status_code, 404)
         self.assertIn('Not found.', str(response.data))
+
+    def test_show_read_time(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data, format='json')
+        response = self.client.get(
+            reverse('article:get_article', kwargs={'slug': "how-to-train-your-dragon"}), format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(response.data['read_time']), "less than 1 min")
+
+    def test_show_read_time_more_than_a_minute(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article, format='json')
+        response = self.client.get(
+            reverse('article:get_article', kwargs={'slug': "how-to-train-your-dragon"}), format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(response.data['read_time']), "4 mins")
