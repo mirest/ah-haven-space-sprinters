@@ -92,6 +92,10 @@ class BaseTestClass(TestCase):
 
         }
 
+        self.email_share = {
+                "email": "user@sprinters.ug",
+        }
+
         self.client = APIClient()
 
         self.client.post(reverse('auth:register'),
