@@ -1,14 +1,12 @@
 import os
 
-import django_heroku
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = os.environ['DEBUG']
 
-INSTALLED_APPS = [
+INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,7 +23,7 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'authors.apps.articles',
     'authors.apps.comments'
-]
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -90,7 +88,6 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = os.environ.get('STATIC_URL')
-django_heroku.settings(locals(), test_runner=False)
 
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:4000',
@@ -113,6 +110,6 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
-EMAIL_PORT = 465
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')

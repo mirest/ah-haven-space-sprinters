@@ -10,13 +10,21 @@ class UserProfileJSONRenderer(BaseRenderer):
 
 class UserProfileListRenderer(JSONRenderer):
     # Returns profiles of existing users
-
     charset = 'utf-8'
+    data = 'profiles'
 
     @classmethod
     def render(self, data, media_type=None, renderer_context=None):
         # present a list of  user profiles in json format
-
         return json.dumps({
-            'profiles': data
+            self.data: data
         })
+
+
+class FollowingJSONRenderer(BaseRenderer):
+    data = 'follower'
+
+
+class FollowingListRenderer(UserProfileListRenderer):
+    # Returns followers of existing users
+    data= 'followers'

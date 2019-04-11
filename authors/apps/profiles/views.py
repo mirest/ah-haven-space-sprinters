@@ -1,20 +1,25 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import (
-    IsAuthenticated,
-)
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .models import Profile
+from authors.apps.authentication.models import User
+from authors.apps.profiles.models import Profile
+from authors.apps.utilities.custom_permissions.permissions import if_owner_permission
+from .models import Follower
+from .renderers import (
+    UserProfileJSONRenderer,
+    UserProfileListRenderer,
+    FollowingListRenderer
+)
 from .serializers import (
     UserProfileSerializer,
     ProfileUpdateSerializer,
-    ProfileListSerializer
+    ProfileListSerializer,
+    FollowerSerializer,
+    FollowersSerializer
 )
-from authors.apps.utilities.messages import error_messages
-from .renderers import UserProfileJSONRenderer, UserProfileListRenderer
-
-from authors.apps.utilities.custom_permissions.permissions import if_owner_permission
 
 
 class UserProfileView(generics.RetrieveAPIView):
@@ -24,7 +29,7 @@ class UserProfileView(generics.RetrieveAPIView):
     """
     permission_classes = (IsAuthenticated,)
     serializer_class = UserProfileSerializer
-    renderer_classes = (UserProfileJSONRenderer, )
+    renderer_classes = (UserProfileJSONRenderer,)
 
     def get_object(self, *args, **kwargs):
         username = self.kwargs.get("username")
@@ -39,7 +44,7 @@ class UserProfileUpdateView(generics.UpdateAPIView):
     and image """
     serializer_class = ProfileUpdateSerializer
     permission_classes = [IsAuthenticated, ]
-    renderer_classes = (UserProfileJSONRenderer, )
+    renderer_classes = (UserProfileJSONRenderer,)
 
     def get_object(self):
         if_owner_permission(self.request, **self.kwargs)
@@ -61,3 +66,55 @@ class UserProfileListView(generics.ListAPIView):
     @classmethod
     def get_queryset(self):
         return Profile.objects.all()
+
+
+class FollowersAPIView(generics.RetrieveAPIView):
+    """A class for actors who request.user is following."""
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = [FollowingListRenderer]
+    serializer_class = FollowersSerializer
+    lookup_field = 'username'
+
+    @classmethod
+    def get(cls, request, username):
+        # returns a list of actors who follow request.user
+        following = Follower.objects.filter(author=username)
+        serializer = cls.serializer_class(following,many=True)
+        return Response(serializer.data)
+
+
+class FollowCreateDestroyAPIView(generics.CreateAPIView, generics.DestroyAPIView):
+    """A class for following other authors."""
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'username'
+    renderer_classes = (UserProfileJSONRenderer,)
+    serializer_class = FollowerSerializer
+
+    @classmethod
+    def post(cls, request, username):
+        # Follow the author (where an author username=username).
+        follower = Follower.objects.filter(author=username, follow=request.user.username)
+        if follower.exists():
+            return Response({'message': f"You're already following :{username}"})
+        follow = Follower.objects.get_or_create(
+            author=username, follow=request.user.username)
+        users = get_object_or_404(Profile, user__username=username)
+        users.following = True
+        users.save()
+        serializer = UserProfileSerializer(users)
+        return Response(serializer.data)
+
+
+    @classmethod
+    def delete(cls, request, username):
+        # Follow the author (where an author username=username).
+        unfollow = get_object_or_404(
+            Follower,
+            author=username,
+            follow=request.user.username)
+        unfollow.delete()
+        users = get_object_or_404(Profile, user__username=username)
+        users.following = False
+        users.save()
+        profile = UserProfileSerializer(users)
+        return Response(profile.data)

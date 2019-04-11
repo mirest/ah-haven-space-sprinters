@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Profile
+
+from .models import Profile, Follower
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -43,3 +44,16 @@ class ProfileListSerializer(serializers.ModelSerializer):
     @classmethod
     def get_username(self, obj):
         return f"{obj.user.username}"
+
+
+class FollowerSerializer(serializers.Serializer):
+    pass
+
+
+
+class FollowersSerializer(serializers.ModelSerializer):
+    follow = serializers.CharField()
+
+    class Meta:
+        model = Follower
+        fields = ('follow',)
