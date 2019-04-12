@@ -8,7 +8,6 @@ class BaseRenderer(JSONRenderer):
     data = 'data'
 
     def render(self, data, media_type=None, renderer_context=None):
-
         errors = data.get('errors', None)
 
         if errors is not None:

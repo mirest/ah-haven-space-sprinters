@@ -1,18 +1,16 @@
 language: python
 python: 
-
   - "3.6"
 
-services: 
-
+services:
   - postgresql
 
-env: 
-
+env:
   -DJANGO=2.1 DB=postgresql
-install: 
 
+install:
   - pip install -r requirements.txt
+
 before_script:
   - psql -c 'create database testdb;' -U postgres
   - python manage.py makemigrations
@@ -24,4 +22,3 @@ script:
 
 after_success:
   - coveralls
-  
