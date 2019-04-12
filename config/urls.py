@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
+from django.conf.urls import url
 from django.urls import include, path
 from django.views import defaults as default_views
 from rest_framework.documentation import include_docs_urls
@@ -15,8 +16,9 @@ urlpatterns = [
     path('', core_schema_view),
     path('api/', include(('authors.apps.articles.urls','articles'), namespace='article')),
     path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
-    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
-
+    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles')),
+    # path('social/', include('social_django.urls', namespace='social')),
+    path('api/', include('authors.apps.socialauth.urls')),
 
 ]
 
