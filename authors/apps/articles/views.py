@@ -11,18 +11,28 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateDestroyAPIView,
-    CreateAPIView, GenericAPIView)
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    CreateAPIView,
+    GenericAPIView,
+    UpdateAPIView,
+    RetrieveDestroyAPIView,
+    RetrieveUpdateAPIView,
+)
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 
 from config.settings import default
-from .models import Article
+from .models import Article, Rating
 from .pagination import ArticleOffsetPagination
 from .renderers import (
     ArticleJSONRenderer, ArticleShareLinkRenderer)
 from .serializers import (
-    ArticleSerializer, EmailSerializer
+    ArticleSerializer, EmailSerializer, RatingSerializer
 )
 
 from authors.apps.profiles.models import Profile
@@ -208,3 +218,38 @@ class ShareEmailView(CreateAPIView):
         message = {"message": "Your article has been shared successfully"}
 
         return Response(message)
+
+
+class RatingCreateRetrieveAPIView(CreateAPIView, RetrieveUpdateAPIView):
+    """
+    method class holding posting a rating for an article and
+     getting an average rating for an article
+    """
+    serializer_class = RatingSerializer
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
+
+    def post(self, request, slug):
+        data = request.data
+        article = self.serializer_class.validate_user_rate(
+            slug, request.user)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(article=article, user=request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get(self, request, slug):
+        data = get_object_or_404(
+            Rating, article__slug=slug, user=request.user.pk)
+        serializer = self.serializer_class(data, many=False)
+        resp = {'rating': serializer.data['rating']}
+        return Response(resp, status=status.HTTP_200_OK)
+
+    def patch(self, request, slug):
+        rate = get_object_or_404(
+            Rating, article__slug=slug, user=request.user.pk)
+        data = {'slug': slug, 'rating': request.data['rating']}
+        serializer = self.serializer_class(rate, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

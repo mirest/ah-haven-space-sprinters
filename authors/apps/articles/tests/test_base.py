@@ -21,12 +21,19 @@ class BaseTestClass(TestCase):
             "username": "sampleuser2",
             "email": "user@sprinters2.ug",
             "password": "Butt3rfly12"}
+        self.user_data3 = {
+            "username": "sampleuser3",
+            "email": "user3@sprinters.ug",
+            "password": "Butt3rfly123"}
         self.login_data = {
             "email": "user@sprinters.ug",
             "password": "Butt3rfly1"}
         self.login_data_user2 = {
             "email": "user@sprinters.ug",
             "password": "Butt3rfly1"}
+        self.login_data3 = {
+            "email": "user3@sprinters.ug",
+            "password": "Butt3rfly123"}
         self.article_data = {
             "title": "how to train your dragon",
             "description": "ever wonder how to do that?",
@@ -56,6 +63,7 @@ class BaseTestClass(TestCase):
                 self.user_data))
         self.test_token = login_resp.data.get("auth_token")
         self.auth_header = 'Bearer {}'.format(self.test_token)
+
         self.client.post(
             reverse('auth:register'),
             content_type='application/json',
@@ -71,6 +79,23 @@ class BaseTestClass(TestCase):
                 self.login_data_user2))
         self.test_token2 = login_resp.data.get("auth_token")
         self.auth_header2 = 'Bearer {}'.format(self.test_token2)
+
+        self.client.post(
+            reverse('auth:register'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data3))
+        verification_link = (mail.outbox[2].body.split('\n')).pop(1)
+        url = verification_link.split("testserver").pop(1)
+        response = self.client.get(url, content_type='application/json')
+        login_resp = self.client.post(
+            reverse('auth:login'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data3))
+        self.test_token = login_resp.data.get("auth_token")
+        self.auth_header3 = 'Bearer {}'.format(self.test_token)
+
         self.article_data = {
             "title": "how to train your dragon",
             "description": "ever wonder how to do that?",
@@ -119,27 +144,55 @@ class BaseTestClass(TestCase):
             "body": "you have to beleive again"
         }
         self.email_share = {
-                "email": "user@sprinters.ug",
+            "email": "user@sprinters.ug",
         }
         self.client = APIClient()
-        self.client.post(reverse('auth:register'),
-                         content_type='application/json', data=json.dumps(self.user_data))
+        self.client.post(
+            reverse('auth:register'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data))
         verification_link = (mail.outbox[0].body.split('\n')).pop(1)
         url = verification_link.split("testserver").pop(1)
         response = self.client.get(url, content_type='application/json')
-        login_resp = self.client.post(reverse('auth:login'), content_type='application/json',
-                                      data=json.dumps(self.user_data))
+        login_resp = self.client.post(
+            reverse('auth:login'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data))
 
         self.test_token = login_resp.data.get("auth_token")
         self.auth_header = 'Bearer {}'.format(self.test_token)
 
-        self.client.post(reverse('auth:register'),
-                         content_type='application/json', data=json.dumps(self.user_data2))
+        self.client.post(
+            reverse('auth:register'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data2))
         verification_link = (mail.outbox[0].body.split('\n')).pop(1)
         url = verification_link.split("testserver").pop(1)
         response = self.client.get(url, content_type='application/json')
-        login_resp = self.client.post(reverse('auth:login'), content_type='application/json',
-                                      data=json.dumps(self.login_data_user2))
+        login_resp = self.client.post(
+            reverse('auth:login'),
+            content_type='application/json',
+            data=json.dumps(
+                self.login_data_user2))
 
         self.test_token2 = login_resp.data.get("auth_token")
         self.auth_header2 = 'Bearer {}'.format(self.test_token2)
+
+        self.client.post(
+            reverse('auth:register'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data3))
+        verification_link = (mail.outbox[2].body.split('\n')).pop(1)
+        url = verification_link.split("testserver").pop(1)
+        response = self.client.get(url, content_type='application/json')
+        login_resp = self.client.post(
+            reverse('auth:login'),
+            content_type='application/json',
+            data=json.dumps(
+                self.user_data3))
+        self.test_token = login_resp.data.get("auth_token")
+        self.auth_header3 = 'Bearer {}'.format(self.test_token)

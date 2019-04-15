@@ -79,11 +79,13 @@ class FollowersAPIView(generics.RetrieveAPIView):
     def get(cls, request, username):
         # returns a list of actors who follow request.user
         following = Follower.objects.filter(author=username)
-        serializer = cls.serializer_class(following,many=True)
+        serializer = cls.serializer_class(following, many=True)
         return Response(serializer.data)
 
 
-class FollowCreateDestroyAPIView(generics.CreateAPIView, generics.DestroyAPIView):
+class FollowCreateDestroyAPIView(
+        generics.CreateAPIView,
+        generics.DestroyAPIView):
     """A class for following other authors."""
     permission_classes = (IsAuthenticated,)
     lookup_field = 'username'
@@ -93,9 +95,11 @@ class FollowCreateDestroyAPIView(generics.CreateAPIView, generics.DestroyAPIView
     @classmethod
     def post(cls, request, username):
         # Follow the author (where an author username=username).
-        follower = Follower.objects.filter(author=username, follow=request.user.username)
+        follower = Follower.objects.filter(
+            author=username, follow=request.user.username)
         if follower.exists():
-            return Response({'message': f"You're already following :{username}"})
+            return Response(
+                {'message': f"You're already following :{username}"})
         follow = Follower.objects.get_or_create(
             author=username, follow=request.user.username)
         users = get_object_or_404(Profile, user__username=username)
@@ -103,7 +107,6 @@ class FollowCreateDestroyAPIView(generics.CreateAPIView, generics.DestroyAPIView
         users.save()
         serializer = UserProfileSerializer(users)
         return Response(serializer.data)
-
 
     @classmethod
     def delete(cls, request, username):

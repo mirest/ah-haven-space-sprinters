@@ -50,7 +50,6 @@ class FollowerSerializer(serializers.Serializer):
     pass
 
 
-
 class FollowersSerializer(serializers.ModelSerializer):
     follow = serializers.CharField()
 

@@ -1,9 +1,15 @@
+import datetime
 from rest_framework import serializers
-
+from django.shortcuts import get_object_or_404
+from django.db.models import Avg, Sum, Count, Func
+from rest_framework.fields import CurrentUserDefault
+from django.core.validators import MaxValueValidator, MinValueValidator
 from authors.apps.profiles.models import Profile
+from authors.apps.authentication.models import User
 from authors.apps.profiles.serializers import UserProfileSerializer
+from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.utilities.estimators import article_read_time
-from .models import Article
+from .models import Article, Rating
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -20,6 +26,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     created_at = serializers.CharField(read_only=True)
     updated_at = serializers.CharField(read_only=True)
     favourited = serializers.CharField(read_only=True)
+    rating = serializers.SerializerMethodField()
+    user_rating = serializers.SerializerMethodField()
     author = AuthorProfileSerializer(read_only=True)
     image = serializers.URLField(allow_blank=True, required=False)
     read_time = serializers.SerializerMethodField()
@@ -30,11 +38,25 @@ class ArticleSerializer(serializers.ModelSerializer):
         # or response, including fields specified explicitly above.
         fields = ['title', 'description', 'body', 'image', 'slug',
                   'favourited', 'created_at', 'updated_at', 'author',
-                  'read_time', 'tags']
+                  'read_time', 'tags', 'rating', 'user_rating']
 
     @classmethod
     def get_read_time(self, obj):
         return article_read_time(obj.body)
+
+    @classmethod
+    def get_rating(self, obj):
+        return obj.average_rating
+
+    def get_user_rating(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, "user"):
+            user = request.user
+            if user.is_authenticated:
+                rate = Rating.objects.filter(article=obj, user=user)
+                return float(rate.values_list('rating')[
+                             0][0] if rate.exists() else 0)
+        return None
 
     def create(self, validated_data):
         author = self.context.get('author', None)
@@ -60,3 +82,49 @@ class EmailSerializer(serializers.Serializer):
         # or response, including fields specified explicitly above.
 
         fields = ['email', ]
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    """
+    serializers class holding rating logic for an article
+    """
+    rating = serializers.DecimalField(
+        required=True,
+        max_digits=5,
+        decimal_places=1,
+        validators=[
+            MaxValueValidator(5),
+            MinValueValidator(0)])
+
+    @staticmethod
+    def validate_user_rate(slug, user: User):
+        article = get_object_or_404(Article, slug__exact=slug)
+        rating = Rating.objects.filter(article__slug=slug, user=user)
+        if article.author.user == user:
+            raise serializers.ValidationError({
+                "error": [
+                    "Rate an article that does not belong to you, Please"]
+            })
+        elif rating.exists():
+            raise serializers.ValidationError({
+                "error": [
+                    "Article rating already exists, Please"]
+            })
+        return article
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['article details:'] = ({
+            'author': instance.article.author.user.username,
+            'title': instance.article.title,
+            'body': instance.article.body,
+            'description': instance.article.description},)
+        response['user'] = instance.user.username
+        response['article'] = instance.article.slug
+        response['average_rating'] = instance.article.average_rating
+        return response
+
+    class Meta:
+        model = Rating
+        fields = ("rating", "user", "article",)
+        read_only_fields = ("user", "article",)
