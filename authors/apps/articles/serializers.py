@@ -30,7 +30,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         # or response, including fields specified explicitly above.
         fields = ['title', 'description', 'body', 'image', 'slug',
                   'favourited', 'created_at', 'updated_at', 'author',
-                  'read_time', ]
+                  'read_time', 'tags']
 
     @classmethod
     def get_read_time(self, obj):

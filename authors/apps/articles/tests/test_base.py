@@ -31,6 +31,11 @@ class BaseTestClass(TestCase):
             "title": "how to train your dragon",
             "description": "ever wonder how to do that?",
             "body": "you have to beleive"}
+        self.article_data2 = {
+            "title": "how to train your dragon",
+            "description": "ever wonder how to do that?",
+            "body": "you have to beleive",
+            "tags":["comedy","education"]}
         self.update_data = {
             "title": "how to train your dragon again",
             "description": "ever wonder how to do that again?",
