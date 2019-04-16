@@ -27,11 +27,22 @@ class CommentsAPIView(generics.ListCreateAPIView):
         article = get_object_or_404(Article, slug=slug)
         data = request.data
         author = Profile.objects.get(user=request.user)
-        serializer = self.serializer_class(data=data)
+        comment_on_start = request.data.get('comment_on_start')
+        comment_on_end = request.data.get('comment_on_end')
+        comment_on_text = None
+        if comment_on_start and comment_on_end:
+            if int(comment_on_start) < int(comment_on_end):
+                highlight = [int(comment_on_start), int(comment_on_end)]
+            else:
+                highlight = [int(comment_on_end), int(comment_on_start)]
+            comment_on_text = str(article.body[highlight[0]:highlight[1]])
+        serializer = self.serializer_class(
+            data=data, context={'article': article})
         serializer.is_valid(raise_exception=True)
         serializer.save(
             author=author,
-            article=article
+            article=article,
+            comment_on_text=comment_on_text
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -59,13 +70,15 @@ class CommentDetailsAPIView(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, slug, comment_pk):
         self.required_objects(request, slug, comment_pk)
         self.author_requirements(request)
-
+        article = get_object_or_404(Article, slug=slug)
         if not self.valid_author:
             raise PermissionDenied(
                 error_messages.get('permission_denied'))
 
         serializer = self.serializer_class(
-            self.comment, self.data, partial=True)
+            self.comment, self.data, partial=True,
+            context={'article': article}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

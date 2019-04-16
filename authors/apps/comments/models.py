@@ -13,6 +13,9 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    comment_on_text = models.TextField(blank=False, null=True, default=None)
+    comment_on_start = models.PositiveIntegerField(null=True, blank=True)
+    comment_on_end = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         """make sure comments are arranged in order of time created"""
