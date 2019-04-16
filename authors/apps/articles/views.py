@@ -3,14 +3,16 @@ import json
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView, RetrieveUpdateDestroyAPIView,
+    CreateAPIView, GenericAPIView)
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
@@ -47,6 +49,30 @@ class ArticleView(ListCreateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class Tagview(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def all_tags():
+        articles = get_list_or_404(Article)
+        articles_with_tags = list(filter(lambda x: x.tags, articles))
+        all_tags = []
+        if articles_with_tags:
+            all_tags_list = [x.tags for x in articles_with_tags]
+            for tag in all_tags_list:
+                all_tags += tag
+            return set(all_tags)
+
+    @staticmethod
+    def get(request):
+        tags = Tagview.all_tags()
+        if tags:
+            return Response({'tags': list(tags)}, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'there are no tags available'},
+            status=status.HTTP_404_NOT_FOUND)
 
 
 class ArticleRetrieveUpdateDelete(RetrieveUpdateDestroyAPIView):

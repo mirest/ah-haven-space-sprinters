@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 from django.utils.text import slugify
 
 
@@ -33,6 +33,10 @@ class Article(models.Model):
 
     # a field for articles marked as fovourites
     favourited = models.BooleanField(default=False)
+
+    tags = ArrayField(
+        models.CharField(max_length=300),
+        blank=True, default=list)
 
     author = models.ForeignKey(
         'profiles.Profile',

@@ -159,3 +159,19 @@ class TestUserRoutes(BaseTestClass):
             reverse('article:share_email', kwargs={'slug':"how-to-train-your-dragon"}), data=self.email_share, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('Your article has been shared successfully', str(response.data))
+
+    def test_get_all_tags(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data2, format='json')
+        resp = self.client.get(
+            reverse('articles:get_tags'), format='json')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_no_tags_available(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            reverse('article:create_article'), data=self.article_data, format='json')
+        resp = self.client.get(
+            reverse('articles:get_tags'), format='json')
+        self.assertIn('there are no tags available',str(resp.data))

@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     ArticleView, ArticleRetrieveUpdateDelete, ShareFacebookView,
-    ShareTwitterView, ShareEmailView
+    ShareTwitterView, ShareEmailView, Tagview
 )
 
 urlpatterns = [
@@ -14,4 +14,6 @@ urlpatterns = [
          ShareTwitterView.as_view(), name='share_twitter'),
     path('articles/<slug>/share/email',
          ShareEmailView.as_view(), name='share_email'),
+    path('tags/', Tagview.as_view(), name='get_tags'),
+
 ]
