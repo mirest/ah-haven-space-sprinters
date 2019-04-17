@@ -10,6 +10,8 @@ from .views import (
     Tagview,
 )
 
+from .like_views import ArticleLikesView
+
 urlpatterns = [
     path(
         'articles/',
@@ -35,6 +37,7 @@ urlpatterns = [
         'articles/<slug>/rate',
         RatingCreateRetrieveAPIView.as_view(),
         name='rate_article'),
-
     path('tags/', Tagview.as_view(), name='get_tags'),
+    path('articles/<slug>/likes/',
+         ArticleLikesView.as_view(), name='article_likes'),
 ]

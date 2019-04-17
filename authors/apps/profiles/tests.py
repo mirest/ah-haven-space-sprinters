@@ -129,3 +129,22 @@ class TestUserProfile(BaseTestClass):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.verified_user_login_token())
         self.assertEqual(response.status_code, 200)
+
+    def test_following_again_same_user(self):
+        sign_up_response = self.client.post(
+            reverse('auth:login'),
+            content_type='application/json',
+            data=json.dumps(
+                self.verified_user_login_credentials))
+        self.client.post(
+            '/api/profiles/sampleuser/follow',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.verified_user_login_token())
+
+        response = self.client.post(
+            '/api/profiles/sampleuser/follow',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.verified_user_login_token())
+        message = {'message': "You're already following :sampleuser"}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, message)
