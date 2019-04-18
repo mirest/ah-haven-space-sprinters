@@ -11,8 +11,7 @@ class TestModel(TestCase):
             password = validation_helpers.validate_password('')
         with self.assertRaises(serializers.ValidationError):
             password = validation_helpers.validate_password('123456qwe')
-    
+
     def test_validate_password_succeeds(self):
         password = validation_helpers.validate_password('Strong.Password.2')
-        self.assertEqual(password,'Strong.Password.2')        
-    
+        self.assertEqual(password, 'Strong.Password.2')

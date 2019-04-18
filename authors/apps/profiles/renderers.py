@@ -27,4 +27,4 @@ class FollowingJSONRenderer(BaseRenderer):
 
 class FollowingListRenderer(UserProfileListRenderer):
     # Returns followers of existing users
-    data= 'followers'
+    data = 'followers'

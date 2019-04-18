@@ -16,16 +16,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Article',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=120)),
                 ('slug', models.SlugField(default=False, max_length=255, unique=True)),
                 ('description', models.TextField()),
                 ('body', models.TextField()),
-                ('image', models.ImageField(default='static/media/None/no-img.jpg', upload_to='staic/media/')),
+                ('image', models.ImageField(
+                    default='static/media/None/no-img.jpg', upload_to='staic/media/')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('favourited', models.BooleanField(default=False)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='articles', to='profiles.Profile')),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                             related_name='articles', to='profiles.Profile')),
             ],
         ),
     ]

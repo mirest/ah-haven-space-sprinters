@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MaxValueValidator, MinValueValidator
+from authors.apps.authentication.models import User
+from django.db.models import Avg, Sum, Count, Func
 from django.utils.text import slugify
 
 
@@ -56,3 +59,27 @@ class Article(models.Model):
         if not self.slug:
             self.slug = self._get_unique_slug()
         super(Article, self).save(*args, **kwargs)
+
+    @property
+    def average_rating(self):
+        ratings = self.ratings.all().aggregate(rating=Avg("rating"))
+        return float('%.1f' % (ratings["rating"] if ratings['rating'] else 0))
+
+
+class Rating(models.Model):
+    article = models.ForeignKey(
+        Article,
+        related_name="ratings",
+        on_delete=models.CASCADE,
+        unique=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ratings",
+        null=True,
+        unique=False)
+    rating = models.DecimalField(max_digits=5, decimal_places=1, validators=[
+        MaxValueValidator(5), MinValueValidator(0)])
+
+    class Meta:
+        unique_together = ('article', 'user',)

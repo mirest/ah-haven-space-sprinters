@@ -208,7 +208,10 @@ class TestUserRoutes(BaseTestClass):
         token = password_rest_token.make_token(user)
         uidb64 = urlsafe_base64_encode(force_bytes(user)).decode()
         new_password = {'password1': 'Password123', 'password2': 'Password123'}
-        response = self.client.post(f'/api/reset/{uidb64}/{token}', content_type='application/json', data=json.dumps(new_password))
+        response = self.client.post(
+            f'/api/reset/{uidb64}/{token}',
+            content_type='application/json',
+            data=json.dumps(new_password))
         message = {
             'message': 'Password successfully updated',
             'status_code': 200}
