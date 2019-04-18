@@ -27,6 +27,9 @@ from .serializers import (
 
 from authors.apps.profiles.models import Profile
 from authors.apps.authentication.models import User
+from .filters import FilterArticle
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 
 class ArticleView(ListCreateAPIView):
@@ -37,6 +40,9 @@ class ArticleView(ListCreateAPIView):
     renderer_classes = (ArticleJSONRenderer, )
     serializer_class = ArticleSerializer
     pagination_class = ArticleOffsetPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    filter_class = FilterArticle
+    search_fields = ('description', 'body', 'title', 'author__user__username')
 
     def post(self, request):
         serializer_context = {'author': request.user.profile}

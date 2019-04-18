@@ -22,7 +22,8 @@ INSTALLED_APPS = (
     'authors.apps.core',
     'authors.apps.profiles',
     'authors.apps.articles',
-    'authors.apps.comments'
+    'authors.apps.comments',
+    'django_filters'
 )
 
 MIDDLEWARE = [
