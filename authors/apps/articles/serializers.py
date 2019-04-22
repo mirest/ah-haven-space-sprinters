@@ -9,7 +9,7 @@ from authors.apps.authentication.models import User
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.utilities.estimators import article_read_time
-from .models import Article, Rating
+from .models import Article, Rating, ArticleLikes
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -38,7 +38,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         # or response, including fields specified explicitly above.
         fields = ['title', 'description', 'body', 'image', 'slug',
                   'favourited', 'created_at', 'updated_at', 'author',
-                  'read_time', 'tags', 'rating', 'user_rating']
+                  'read_time', 'tags', 'rating', 'user_rating',
+                  'likes_count', 'dislikes_count']
 
     @classmethod
     def get_read_time(self, obj):
@@ -128,3 +129,15 @@ class RatingSerializer(serializers.ModelSerializer):
         model = Rating
         fields = ("rating", "user", "article",)
         read_only_fields = ("user", "article",)
+
+
+class LikeArticleSerializer(serializers.ModelSerializer):
+    """
+    Serializer for liking an article model
+    """
+    like_article = serializers.BooleanField()
+
+    class Meta:
+        model = ArticleLikes
+        fields = ('like_article', 'article', 'user')
+        read_only_fields = ('article', 'user')

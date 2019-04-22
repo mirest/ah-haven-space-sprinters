@@ -146,6 +146,17 @@ class BaseTestClass(TestCase):
         self.email_share = {
             "email": "user@sprinters.ug",
         }
+        self.url = reverse('article:create_article')
+        self.like_url = '/api/articles/how-to-train-your-dragon/likes/'
+        self.like_request = {
+            "like_article": True
+        }
+        self.like_request_invalid = {
+            "like_article": "True"
+        }
+        self.dislike_request = {
+            "like_article": False
+        }
         self.client = APIClient()
         self.client.post(
             reverse('auth:register'),

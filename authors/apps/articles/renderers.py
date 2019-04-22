@@ -8,3 +8,8 @@ class ArticleJSONRenderer(BaseRenderer):
 class ArticleShareLinkRenderer(BaseRenderer):
     # Returns social media share links
     data = 'link'
+
+
+class ArticleLikesRenderer(BaseRenderer):
+    # Returns article like status
+    data = 'like_status'

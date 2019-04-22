@@ -5,6 +5,10 @@ from authors.apps.authentication.models import User
 from django.db.models import Avg, Sum, Count, Func
 from django.utils.text import slugify
 
+from authors.apps.articles.utilities import (
+    get_like_status, get_likes_or_dislkes
+)
+
 
 class Article(models.Model):
     # A tile for the created object
@@ -65,6 +69,21 @@ class Article(models.Model):
         ratings = self.ratings.all().aggregate(rating=Avg("rating"))
         return float('%.1f' % (ratings["rating"] if ratings['rating'] else 0))
 
+    def likes_count(self):
+        return get_likes_or_dislkes(
+            model=ArticleLikes,
+            like_article=True,
+            article_id=self.pk
+        )
+
+    @property
+    def dislikes_count(self):
+        return get_likes_or_dislkes(
+            model=ArticleLikes,
+            like_article=False,
+            article_id=self.pk
+        )
+
 
 class Rating(models.Model):
     article = models.ForeignKey(
@@ -83,3 +102,11 @@ class Rating(models.Model):
 
     class Meta:
         unique_together = ('article', 'user',)
+
+
+class ArticleLikes(models.Model):
+    article = models.ForeignKey(
+        Article, on_delete=models.CASCADE,
+        null=True, related_name="article_likes", blank=True)
+    like_article = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

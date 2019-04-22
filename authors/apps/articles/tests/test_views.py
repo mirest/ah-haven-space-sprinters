@@ -1,11 +1,12 @@
 import json
 
 from django.urls import reverse
+from django.core import mail
 
 from rest_framework import status
 
 from authors.apps.authentication.models import User
-from authors.apps.articles.models import Article
+from authors.apps.articles.models import Article, ArticleLikes
 
 from .test_base import BaseTestClass
 from authors.apps.authentication.tests.test_base import BaseTestClass as BTC
@@ -339,3 +340,245 @@ class TestUserRoutes(BaseTestClass):
         error = {"detail": "Authentication credentials were not provided."}
         self.assertEqual(response.status_code, 403)
         self.assertEqual(error, response.data)
+
+
+class TestArticleLikes(BaseTestClass):
+
+    def test_like_article(self):
+        response = self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header2)
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data=self.like_request,
+            format='json'
+        )
+        self.assertEqual(like_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            like_response.data['message'], 'You have liked an article')
+
+    def test_like_article_doesnot_exist(self):
+
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data=self.like_request,
+            format='json'
+        )
+        self.assertEqual(like_response.status_code, 404)
+
+    def test_like_article_with_non_boolean_value(self):
+        response = self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header2)
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data={"like_article": "true"},
+            format='json'
+        )
+        expected_response = {
+            "errors": [
+                "Value of like_article should be a boolean"
+            ]
+        }
+        self.assertEqual(like_response.status_code, 400)
+        self.assertEqual(like_response.data, expected_response)
+
+    def test_like_article_with_invalid_request_body(self):
+        response = self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header2)
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2
+        )
+        expected_response = {
+            "errors": [
+                "like_article field is required"
+            ]
+        }
+        self.assertEqual(like_response.status_code, 400)
+        self.assertEqual(like_response.data, expected_response)
+
+    def test_like_article_already_liked(self):
+        response = self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header2)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data=self.like_request,
+            format='json'
+        )
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data=self.like_request,
+            format='json'
+        )
+        self.assertEqual(like_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            like_response.data['message'], 'You have already liked the article')
+
+    def test_dislike_article(self):
+        response = self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header2)
+        like_response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            HTTP_AUTHORIZATION=self.auth_header2,
+            data=self.dislike_request,
+            format='json'
+        )
+        self.assertEqual(like_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            like_response.data['message'], 'You have disliked an article')
+
+    def test_list_of_users_liked_succeeds(self):
+        """Tests an endpoint that lists users that liked/disliked"""
+
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.like_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.get(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(["sampleuser"],
+                             response.data.get("likes"))
+
+    def test_get_like_article(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.url, data=self.article, format='json')
+        slug = response.data.get('slug')
+        like_url = reverse("article:article_likes", args=[slug])
+        self.client.put(like_url, format='json')
+        get_like_url = reverse("article:article_likes", args=[slug])
+        get_like_response = self.client.get(get_like_url, format='json')
+        self.assertEqual(get_like_response.status_code, status.HTTP_200_OK)
+
+    def test_unlike_an_article_succeeds(self):
+        """Unlike an already liked article by the same user"""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.url, data=self.article, format='json')
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.like_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.delete(
+            self.like_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have unliked an article", response.data["message"])
+
+    def test_dislike_an_article_succeeds(self):
+        """Tests an endpoint that dislikes an article"""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.url, data=self.article, format='json')
+        response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have disliked an article", response.data["message"])
+
+    def test_dislike_after_dislike_succeeds(self):
+        """Dislike an already disliked article by the same user"""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.url, data=self.article, format='json')
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.put(
+            self.like_url,
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have already disliked the article",
+                      response.data["message"])
+
+    def test_undislike_an_article_succeeds(self):
+        """Remove a dislike from a disliked article by the same user"""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.url, data=self.article, format='json')
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.delete(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have un-disliked an article",
+                      response.data["message"])
+
+    def test_like_after_dislike_an_article_succeeds(self):
+        """like a formerly a disliked article by the same user"""
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.like_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have liked an article", response.data["message"])
+
+    def test_dislike_after_like_an_article_succeeds(self):
+        """Dislike a formerly a liked article by the same user"""
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.like_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            data=json.dumps(self.dislike_request),
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("You have disliked an article", response.data["message"])
+
+    def test_remove_like_dislike_nonexixtent(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.delete(
+            '/api/articles/how-to-train-your-dragon/likes/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        expected_response = {
+            "errors": [
+                "There is no like or dislike to remove"
+            ]
+        }
+        self.assertEqual(response.data, expected_response)
