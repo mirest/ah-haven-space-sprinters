@@ -582,3 +582,59 @@ class TestArticleLikes(BaseTestClass):
             ]
         }
         self.assertEqual(response.data, expected_response)
+
+    def test_report_creation(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.report_url, data={'body': 'anything'}, format='json',
+            HTTP_AUTHORIZATION=self.auth_header3)
+        self.assertIn(
+            f"You have successfully reported article {self.slug}", str(response.data))
+
+    def test_report_on_article_again(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            self.report_url, data={'body': 'anything'}, format='json',
+            HTTP_AUTHORIZATION=self.auth_header3)
+        response = self.client.post(
+            self.report_url, data={'body': 'anything'}, format='json',
+            HTTP_AUTHORIZATION=self.auth_header3)
+        self.assertIn('you already reported this article', str(response.data))
+
+    def test_report_your_own_article(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.post(
+            self.report_url, data={'body': 'anything'}, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn("you cannot report your own article", str(response.data))
+
+    def test_get_reports_admin(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(
+            self.report_url, data={'body': 'anything'}, format='json',
+            HTTP_AUTHORIZATION=self.auth_header3)
+        user = User.objects.create_superuser(
+            username='samleuser',
+            email='use@sprinters.ug',
+            password='Butt3rfly1')
+        self.client.force_authenticate(user=user)
+        resp = self.client.get(reverse('article:get_reports'))
+        print(resp.data)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_get_reports_non_admin(self):
+        self.client.post(
+            self.url, data=self.article, format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        resp = self.client.get(
+            reverse('article:get_reports'), format='json',
+            HTTP_AUTHORIZATION=self.auth_header)
+        self.assertIn('permission denied login as admin', str(resp.data))

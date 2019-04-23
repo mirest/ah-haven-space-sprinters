@@ -42,7 +42,7 @@ class BaseTestClass(TestCase):
             "title": "how to train your dragon",
             "description": "ever wonder how to do that?",
             "body": "you have to beleive",
-            "tags":["comedy","education"]}
+            "tags": ["comedy", "education"]}
         self.update_data = {
             "title": "how to train your dragon again",
             "description": "ever wonder how to do that again?",
@@ -197,13 +197,15 @@ class BaseTestClass(TestCase):
             content_type='application/json',
             data=json.dumps(
                 self.user_data3))
-        verification_link = (mail.outbox[2].body.split('\n')).pop(1)
-        url = verification_link.split("testserver").pop(1)
-        response = self.client.get(url, content_type='application/json')
-        login_resp = self.client.post(
+        verification_link3 = (mail.outbox[2].body.split('\n')).pop(1)
+        url3 = verification_link3.split("testserver").pop(1)
+        self.client.get(url3, content_type='application/json')
+        login_resp3 = self.client.post(
             reverse('auth:login'),
             content_type='application/json',
             data=json.dumps(
                 self.user_data3))
-        self.test_token = login_resp.data.get("auth_token")
-        self.auth_header3 = 'Bearer {}'.format(self.test_token)
+        self.test_token3 = login_resp3.data.get("auth_token")
+        self.auth_header3 = 'Bearer {}'.format(self.test_token3)
+        self.slug = 'how-to-train-your-dragon'
+        self.report_url = reverse('article:report', kwargs={'slug': self.slug})
