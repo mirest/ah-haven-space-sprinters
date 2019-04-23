@@ -44,3 +44,15 @@ class Reply(models.Model):
 
     def __str__(self):
         return self.body
+
+
+class CommentLike(models.Model):
+    """
+    Handles liking of a specific user by an authenticated user
+    """
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    like_status = models.BooleanField()
+    liked_by = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "like by  {}".format(self.liked_by)
