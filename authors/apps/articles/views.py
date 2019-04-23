@@ -16,6 +16,8 @@ from rest_framework.generics import (
     CreateAPIView,
     GenericAPIView,
     UpdateAPIView,
+    RetrieveAPIView,
+    DestroyAPIView,
     RetrieveDestroyAPIView,
     RetrieveUpdateAPIView,
 )
@@ -27,12 +29,16 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from config.settings import default
-from .models import Article, Rating, Report
+from .models import Article, Rating, Report, BookMark
 from .pagination import ArticleOffsetPagination
 from .renderers import (
     ArticleJSONRenderer, ArticleShareLinkRenderer)
 from .serializers import (
-    ArticleSerializer, EmailSerializer, RatingSerializer, ReportSerializer
+    ArticleSerializer,
+    EmailSerializer,
+    RatingSerializer,
+    ReportSerializer,
+    BookMarkSerializer,
 )
 
 from authors.apps.profiles.models import Profile
@@ -236,7 +242,7 @@ class RatingCreateRetrieveAPIView(CreateAPIView, RetrieveUpdateAPIView):
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save(article=article, user=request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get(self, request, slug):
         data = get_object_or_404(
@@ -308,3 +314,32 @@ class GetReportsAPIView(ListCreateAPIView):
                             status=status.HTTP_200_OK)
         raise PermissionDenied(
             {"error": "permission denied login as admin"})
+
+
+class BookMarkCreateDestroyAPI(CreateAPIView, DestroyAPIView):
+    """
+    method class holding bookmarking and un-bookmarking an article
+    """
+    serializer_class = BookMarkSerializer
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
+
+    def post(self, request, slug):
+        serializer = self.serializer_class.create(slug, request.user)
+        return Response(serializer, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, slug):
+        serializer = self.serializer_class.delete(slug, request.user)
+        return Response(serializer, status=status.HTTP_200_OK)
+
+
+class BookMarkRetrieveAPI(RetrieveAPIView):
+    """
+    method class holding getting bookmarked articles
+    """
+    serializer_class = BookMarkSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        serializer = self.serializer_class.get(request.user)
+        return Response(serializer, status=status.HTTP_200_OK)

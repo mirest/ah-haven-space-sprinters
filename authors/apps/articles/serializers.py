@@ -1,6 +1,6 @@
 import datetime
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.db.models import Avg, Sum, Count, Func
 from rest_framework.fields import CurrentUserDefault
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -9,7 +9,7 @@ from authors.apps.authentication.models import User
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.utilities.estimators import article_read_time
-from .models import Article, Rating, ArticleLikes, Report
+from .models import Article, Rating, ArticleLikes, Report, BookMark
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -166,3 +166,52 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('reporter', 'article', 'body',)
+
+
+class BookMarkSerializer(serializers.ModelSerializer):
+    """
+    Serializer for bookmarking an article
+    """
+
+    class Meta:
+        model = BookMark
+        fields = ('article', 'user', 'bookmark')
+        read_only_fields = ('article', 'user', 'bookmark')
+
+    @staticmethod
+    def create(slug, user: User):
+        article = get_object_or_404(Article, slug=slug)
+        bookmark = BookMark.objects.filter(article=article, user=user).exists()
+        if bookmark:
+            raise serializers.ValidationError({
+                "error": [
+                    "Article bookmark already exists, Please"]
+            })
+        elif user.is_authenticated and not bookmark:
+            post = BookMark.objects.create(
+                article=article, user=user, bookmark=True)
+            return {
+                'Article_slug': post.article.slug,
+                'bookmark': post.bookmark}
+
+    @staticmethod
+    def delete(slug, user: User):
+        article = get_object_or_404(Article, slug=slug)
+        bookmark = BookMark.objects.filter(article=article, user=user).exists()
+        if user.is_authenticated and bookmark:
+            unbookmark = BookMark.objects.get(article=article, user=user)
+            unbookmark.delete()
+            return {'Article_slug': slug, 'bookmarked': False}
+        elif not bookmark:
+            raise serializers.ValidationError({
+                "error": [
+                    "Article bookmark doesnot exists."]
+            })
+
+    @staticmethod
+    def get(user: User):
+        bookmark = BookMark.objects.values_list(
+            'article__slug', flat=True).filter(
+            user=user)
+        response = {'bookmarks': bookmark}
+        return response

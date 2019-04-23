@@ -8,7 +8,9 @@ from .views import (
     ShareEmailView,
     RatingCreateRetrieveAPIView,
     Tagview, ReportsAPIView,
-    GetReportsAPIView
+    GetReportsAPIView,
+    BookMarkCreateDestroyAPI,
+    BookMarkRetrieveAPI,
 )
 
 from .like_views import ArticleLikesView
@@ -45,5 +47,13 @@ urlpatterns = [
          ReportsAPIView.as_view(),
          name='report'),
     path('admin/report',
-         GetReportsAPIView.as_view(), name='get_reports')
+         GetReportsAPIView.as_view(), name='get_reports'),
+    path(
+        'articles/<slug>/bookmark',
+        BookMarkCreateDestroyAPI.as_view(),
+        name='bookmark_article'),
+    path(
+        'bookmarks',
+        BookMarkRetrieveAPI.as_view(),
+        name='bookmarked'),
 ]

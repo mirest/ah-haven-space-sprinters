@@ -239,7 +239,7 @@ class TestUserRoutes(BaseTestClass):
                 kwargs={
                     'slug': "how-to-train-your-dragon"}),
             content_type='application/json', data=json.dumps({'rating': 4.6}))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual('4.6', response.data['rating'])
 
     def test_post_rating_article_same_authour(self):
@@ -341,6 +341,163 @@ class TestUserRoutes(BaseTestClass):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(error, response.data)
 
+    def test_post_bookmark_article_unauthorized(self):
+        response = self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        error = {"detail": "Authentication credentials were not provided."}
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(error, response.data)
+
+    def test_post_bookmark_article(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        response = self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(True, response.data['bookmark'])
+
+    def test_post_bookmark_article_error(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        response = self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train4-your-dragon"}),
+            content_type='application/json')
+        message = {'detail': 'Not found.'}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(message, response.data)
+
+    def test_post_bookmark_article_exists(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        response = self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        message = {"error": ['Article bookmark already exists, Please']}
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['errors'], message)
+
+    def test_get_bookmarked_article(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        response = self.client.get(
+            reverse(
+                'article:bookmarked'),
+            format='json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_bookmarked_article_unauthorized(self):
+        response = self.client.get(
+            reverse(
+                'article:bookmarked'),
+            format='json')
+        error = {"detail": "Authentication credentials were not provided."}
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(error, response.data)
+
+    def test_un_bookmark_article(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        response = self.client.delete(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(False, response.data['bookmarked'])
+
+    def test_un_bookmark_article_error(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        response = self.client.delete(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        error = {
+            "error": [
+                "Article bookmark doesnot exists."]
+        }
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(error, response.data['errors'])
+
+    def test_un_bookmark_article_not_found(self):
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
+        self.client.post(reverse('article:create_article'),
+                         data=self.article_data, format='json')
+        self.client.credentials(HTTP_AUTHORIZATION=self.auth_header3)
+        self.client.post(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        response = self.client.delete(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train7-your-dragon"}),
+            content_type='application/json')
+        message = {'detail': 'Not found.'}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(message, response.data)
+
+    def test_un_bookmark_article_unauthorized(self):
+        response = self.client.delete(
+            reverse(
+                'article:bookmark_article',
+                kwargs={
+                    'slug': "how-to-train-your-dragon"}),
+            content_type='application/json')
+        error = {"detail": "Authentication credentials were not provided."}
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(error, response.data)
+
 
 class TestArticleLikes(BaseTestClass):
 
@@ -420,7 +577,8 @@ class TestArticleLikes(BaseTestClass):
         )
         self.assertEqual(like_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            like_response.data['message'], 'You have already liked the article')
+            like_response.data['message'],
+            'You have already liked the article')
 
     def test_dislike_article(self):
         response = self.client.post(
