@@ -5,6 +5,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.urls import reverse
+from django.dispatch import receiver
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
