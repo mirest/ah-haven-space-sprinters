@@ -746,7 +746,7 @@ class TestArticleLikes(BaseTestClass):
             self.url, data=self.article, format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         response = self.client.post(
-            self.report_url, data={'body': 'anything'}, format='json',
+            self.report_url, data={'reason': 'anything'}, format='json',
             HTTP_AUTHORIZATION=self.auth_header3)
         self.assertIn(
             f"You have successfully reported article {self.slug}", str(response.data))
@@ -756,10 +756,10 @@ class TestArticleLikes(BaseTestClass):
             self.url, data=self.article, format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         self.client.post(
-            self.report_url, data={'body': 'anything'}, format='json',
+            self.report_url, data={'reason': 'anything'}, format='json',
             HTTP_AUTHORIZATION=self.auth_header3)
         response = self.client.post(
-            self.report_url, data={'body': 'anything'}, format='json',
+            self.report_url, data={'reason': 'anything'}, format='json',
             HTTP_AUTHORIZATION=self.auth_header3)
         self.assertIn('you already reported this article', str(response.data))
 
@@ -768,7 +768,7 @@ class TestArticleLikes(BaseTestClass):
             self.url, data=self.article, format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         response = self.client.post(
-            self.report_url, data={'body': 'anything'}, format='json',
+            self.report_url, data={'reason': 'anything'}, format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         self.assertIn("you cannot report your own article", str(response.data))
 
@@ -777,7 +777,7 @@ class TestArticleLikes(BaseTestClass):
             self.url, data=self.article, format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         self.client.post(
-            self.report_url, data={'body': 'anything'}, format='json',
+            self.report_url, data={'reason': 'anything'}, format='json',
             HTTP_AUTHORIZATION=self.auth_header3)
         user = User.objects.create_superuser(
             username='samleuser',
@@ -785,7 +785,6 @@ class TestArticleLikes(BaseTestClass):
             password='Butt3rfly1')
         self.client.force_authenticate(user=user)
         resp = self.client.get(reverse('article:get_reports'))
-        print(resp.data)
         self.assertEqual(resp.status_code, 200)
 
     def test_get_reports_non_admin(self):

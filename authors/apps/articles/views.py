@@ -39,6 +39,8 @@ from .serializers import (
     RatingSerializer,
     ReportSerializer,
     BookMarkSerializer,
+    ArticleSerializer, EmailSerializer, RatingSerializer, ReportSerializer,
+    AllReportsSerializer
 )
 
 from authors.apps.profiles.models import Profile
@@ -303,12 +305,12 @@ class ReportsAPIView(ListCreateAPIView):
 
 class GetReportsAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ReportSerializer
+    serializer_class = AllReportsSerializer
 
     def get(self, request):
         user = request.user
         if user.is_superuser:
-            reports = get_list_or_404(Report)
+            reports = get_list_or_404(Article)
             serializer_data = self.serializer_class(reports, many=True)
             return Response({"articles": serializer_data.data},
                             status=status.HTTP_200_OK)
