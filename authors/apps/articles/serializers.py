@@ -57,9 +57,9 @@ class ArticleSerializer(serializers.ModelSerializer):
             if user.is_authenticated:
                 user_like_status = ArticleLikes.objects.filter(
                     article=obj, user=user
-                    )
+                )
                 return str(user_like_status.values_list('like_article')[
-                             0][0] if user_like_status.exists() else 0)
+                    0][0] if user_like_status.exists() else 0)
         return None
 
     def get_user_rating(self, obj):
@@ -158,10 +158,10 @@ class LikeArticleSerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.ModelSerializer):
 
-    """serializer for reportting articles"""
+    """serializer for reporting articles"""
 
-    reporter = UserProfileSerializer(read_only=True)
-    article = ArticleSerializer(read_only=True)
+    reporter = serializers.SerializerMethodField()
+    article_slug = serializers.SerializerMethodField()
 
     class Meta:
         model = Report
@@ -215,3 +215,23 @@ class BookMarkSerializer(serializers.ModelSerializer):
             user=user)
         response = {'bookmarks': bookmark}
         return response
+        fields = ('reporter', 'article_slug', 'reason',)
+
+    @classmethod
+    def get_article_slug(self, obj):
+        return f"{obj.article.slug}"
+
+    @classmethod
+    def get_reporter(self, obj):
+        return f"{obj.reporter.user.username}"
+
+
+class AllReportsSerializer(serializers.ModelSerializer):
+
+    """serializer for getting all reports"""
+    reports = ReportSerializer(read_only=True, many=True)
+    author = AuthorProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = ('slug', 'author', 'reports')
