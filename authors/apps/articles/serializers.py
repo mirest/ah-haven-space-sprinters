@@ -9,7 +9,10 @@ from authors.apps.authentication.models import User
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.utilities.estimators import article_read_time
-from .models import Article, Rating, ArticleLikes, Report, BookMark
+from .models import (
+    Article, Rating, ArticleLikes,
+    Report, BookMark, Favourites
+)
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -32,6 +35,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     image = serializers.URLField(allow_blank=True, required=False)
     read_time = serializers.SerializerMethodField()
     user_like_status = serializers.SerializerMethodField()
+    favorites = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -40,7 +44,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = ['title', 'description', 'body', 'image', 'slug',
                   'favourited', 'created_at', 'updated_at', 'author',
                   'read_time', 'tags', 'rating', 'user_rating',
-                  'likes_count', 'dislikes_count', 'user_like_status']
+                  'likes_count', 'dislikes_count', 'user_like_status',
+                  'favourited', 'favourite_count', 'favorites']
 
     @classmethod
     def get_read_time(self, obj):
@@ -86,6 +91,22 @@ class ArticleSerializer(serializers.ModelSerializer):
         # save the model.
         instance.save()
         return instance
+
+    @classmethod
+    def generate_usernames(self, profiles):
+        """
+        Args:
+           profiles: Django model queryset
+        Yields:
+           string: username mapping to user profile id
+        """
+        for profile in profiles:
+            yield profile.user.username
+
+    def get_favorites(self, obj):
+        return list(self.generate_usernames(
+            obj.favorites.all()
+        ))
 
 
 class EmailSerializer(serializers.Serializer):
@@ -243,3 +264,12 @@ class AllReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('slug', 'author', 'reports')
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    article = ArticleSerializer(read_only=True)
+
+    class Meta:
+        model = Favourites
+        fields = ('article', 'favourite', 'user')
+        read_only_fields = ('article', 'user')

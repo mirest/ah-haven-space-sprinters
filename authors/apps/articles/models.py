@@ -8,6 +8,7 @@ from ..profiles.models import Profile
 from authors.apps.articles.utilities import (
     get_like_status, get_likes_or_dislkes
 )
+from authors.apps.profiles.models import Profile
 
 
 class Article(models.Model):
@@ -49,6 +50,10 @@ class Article(models.Model):
         'profiles.Profile',
         on_delete=models.CASCADE,
         related_name='articles')
+    favorites = models.ManyToManyField(
+        Profile, related_name='favorited_articles', blank=True)
+    favourite_count = models.IntegerField(blank=True, default=0)
+    objects = models.Manager()
 
     def _get_unique_slug(self):
         slug = slugify(self.title)
@@ -135,3 +140,12 @@ class BookMark(models.Model):
 
     class Meta:
         unique_together = ('article', 'user',)
+
+
+class Favourites(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    article = models.ForeignKey(
+        Article, related_name="article_id",
+        on_delete=models.CASCADE, null=True)
+    favourite = models.BooleanField(default=False)

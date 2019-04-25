@@ -14,6 +14,7 @@ from .views import (
 )
 
 from .like_views import ArticleLikesView
+from .favourites_views import FavouritesView
 
 urlpatterns = [
     path(
@@ -56,4 +57,10 @@ urlpatterns = [
         'bookmarks',
         BookMarkRetrieveAPI.as_view(),
         name='bookmarked'),
+    path(
+        'articles/<slug>/favorite/',
+        FavouritesView.as_view()),
+    path(
+        'articles/favorites/',
+        FavouritesView.as_view(), name="favorited_articles"),
 ]

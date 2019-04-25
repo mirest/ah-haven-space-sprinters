@@ -63,7 +63,10 @@ class CommentSerializer(serializers.ModelSerializer):
         return None
 
     def get_likes_count(self,obj):
-        pass
+        self.comment = obj
+        self.likes = CommentLike.objects.filter(
+            like_status=True).filter(comment=self.comment)
+        return self.likes.count()
 
 class CommentLikeSerializer(serializers.ModelSerializer):
     liked_by = AuthorProfileSerializer(read_only=True)

@@ -795,3 +795,55 @@ class TestArticleLikes(BaseTestClass):
             reverse('article:get_reports'), format='json',
             HTTP_AUTHORIZATION=self.auth_header)
         self.assertIn('permission denied login as admin', str(resp.data))
+
+
+class TestArticleFavorites(BaseTestClass):
+
+    def test_favoriting_an_article_succeeds_if_authorized(self):
+        """
+        Checks if an authenticated user can favortie an article
+        If the article has been favorited, it is removed from favorites
+        Args: slug (Django model article instance)
+
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:create_article'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/favorite/',
+            HTTP_AUTHORIZATION=self.auth_header
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('article has been favorited', response.data['message'])
+
+    def test_unfavoriting_an_article(self):
+        self.client.post(reverse('articles:create_article'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION=self.auth_header)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/favorite/',
+            HTTP_AUTHORIZATION=self.auth_header
+        )
+
+        response = self.client.put(
+            '/api/articles/how-to-train-your-dragon/favorite/',
+            HTTP_AUTHORIZATION=self.auth_header
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('article has been unfavorited', response.data['message'])
+
+    def test_get_article(self):
+        self.client.post(reverse('articles:create_article'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION=self.auth_header)
+        self.client.put(
+            '/api/articles/how-to-train-your-dragon/favorite/',
+            HTTP_AUTHORIZATION=self.auth_header)
+        response = self.client.get('/api/articles/favorites/',
+                                   HTTP_AUTHORIZATION=self.auth_header)
+        self.assertEqual(response.status_code, 200)

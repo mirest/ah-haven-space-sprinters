@@ -13,3 +13,7 @@ class ArticleShareLinkRenderer(BaseRenderer):
 class ArticleLikesRenderer(BaseRenderer):
     # Returns article like status
     data = 'like_status'
+
+
+class FavortiesJsonRenderer(BaseRenderer):
+    name = "favorites"
