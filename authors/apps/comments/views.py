@@ -1,10 +1,15 @@
 from .renderers import CommentRenderer, ReplyRenderer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .serializers import CommentSerializer, ReplySerializer
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly, IsAuthenticated
+)
+from .serializers import (
+    CommentSerializer, ReplySerializer,
+    CommentLikeSerializer
+)
 from ..profiles.models import Profile
-from .models import Comment, Reply
+from .models import Comment, Reply, CommentLike
 from ..articles.models import Article
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
@@ -171,3 +176,73 @@ class ReplyDetailsAPIView(generics.RetrieveUpdateDestroyAPIView):
         self.reply.delete()
         return Response({"message": "Successfully deleted reply"},
                         status=status.HTTP_200_OK)
+
+
+class CommentLikeView(generics.GenericAPIView):
+    serializer_class = CommentLikeSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, *args, **kwargs):
+        """
+        like a specific comment
+        Args:
+            pk[integer]:primary key for a specific comment
+        Returns:
+            success message and 200 ok if complete else 404 if
+            comment is not found
+        """
+        self.comment = get_object_or_404(Comment, pk=kwargs.get("pk"))
+        self.userProfile = get_object_or_404(Profile, user=self.request.user)
+        try:
+            CommentLike.objects.get(liked_by=self.userProfile)
+        except CommentLike.DoesNotExist:
+            serializer = self.serializer_class(data={})
+            serializer.is_valid(raise_exception=True)
+            serializer.save(liked_by=self.userProfile,
+                            comment=self.comment, like_status=True)
+            return Response({
+                "message": "comment liked successfully"
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            "message": "you already liked this comment"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, *args, **kwargs):
+        """
+        get all likes of a comment
+
+        Returns:
+            likes count for a comment
+            list of profiles that liked the comment
+        """
+        self.comment = get_object_or_404(Comment, pk=kwargs.get("pk"))
+        self.likes = CommentLike.objects.filter(
+            like_status=True).filter(comment=self.comment)
+        serializer = self.serializer_class(self.likes, many=True)
+        return Response({
+            "likes": serializer.data,
+            "likesCount": self.likes.count()
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, *args, **kwargs):
+        """
+        delete a comment like provided you already liked it
+
+        Returns:
+            200 ok if unliking was successful and
+            400 if user has not liked comment before
+        """
+        try:
+            self.userProfile = get_object_or_404(
+                Profile, user=self.request.user)
+            self.comment = get_object_or_404(Comment, pk=kwargs.get("pk"))
+            CommentLike.objects.get(liked_by=self.userProfile)
+        except CommentLike.DoesNotExist:
+            return Response({
+                'message': 'you have not yet liked this comment'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        CommentLike.objects.get(liked_by=self.userProfile).delete()
+        return Response({
+            "message": "unliked comment successfully"
+        }, status=status.HTTP_200_OK)

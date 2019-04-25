@@ -31,6 +31,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
     image = serializers.URLField(allow_blank=True, required=False)
     read_time = serializers.SerializerMethodField()
+    user_like_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -39,7 +40,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = ['title', 'description', 'body', 'image', 'slug',
                   'favourited', 'created_at', 'updated_at', 'author',
                   'read_time', 'tags', 'rating', 'user_rating',
-                  'likes_count', 'dislikes_count']
+                  'likes_count', 'dislikes_count', 'user_like_status']
 
     @classmethod
     def get_read_time(self, obj):
@@ -48,6 +49,18 @@ class ArticleSerializer(serializers.ModelSerializer):
     @classmethod
     def get_rating(self, obj):
         return obj.average_rating
+
+    def get_user_like_status(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, "user"):
+            user = request.user
+            if user.is_authenticated:
+                user_like_status = ArticleLikes.objects.filter(
+                    article=obj, user=user
+                    )
+                return str(user_like_status.values_list('like_article')[
+                             0][0] if user_like_status.exists() else 0)
+        return None
 
     def get_user_rating(self, obj):
         request = self.context.get('request')

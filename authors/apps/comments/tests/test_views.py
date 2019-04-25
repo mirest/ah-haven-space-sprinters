@@ -96,3 +96,70 @@ class TestComment(BaseTest):
             data=json.dumps({'body': 'it works'}), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('it works', str(response.data))
+
+    def test_like_a_comment_succeeds(self):
+        self.create_comment()
+        response = self.client.put(reverse('comments:comment_like', args=[self.slug, self.comment_id]),
+                                   content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(response.data['message'], "comment liked successfully")
+
+    def test_like_a_comment_that_you_already_liked_fails(self):
+        self.create_comment()
+
+        response = self.client.put(reverse('comments:comment_like', args=[self.slug, self.comment_id]),
+                                   content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        response = self.client.put(reverse('comments:comment_like', args=[self.slug, self.comment_id]),
+                                   content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(response.data['message'],
+                      "you already liked this comment")
+
+    def test_remove_a_like_on_a_comment_succeeds(self):
+        self.create_comment()
+
+        self.client.put(reverse('comments:comment_like', args=[self.slug, self.comment_id]),
+                        content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        response_remove_like = self.client.delete(reverse('comments:comment_like', args=[
+            self.slug, self.comment_id]), HTTP_AUTHORIZATION=self.auth_header)
+
+        self.assertEqual(response_remove_like.status_code, 200)
+        self.assertIn(
+            response_remove_like.data['message'], "unliked comment successfully")
+
+    def test_remove_a_like_on_a_comment_you_didnot_like_fails(self):
+        self.create_comment()
+
+        response_remove_like = self.client.delete(reverse('comments:comment_like', args=[
+            self.slug, self.comment_id]), content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        self.assertEqual(response_remove_like.status_code, 400)
+        self.assertIn(
+            response_remove_like.data['message'], 'you have not yet liked this comment')
+
+    def test_get_all_likes_on_a_comment_succeeds(self):
+        self.create_comment()
+
+        self.client.put(reverse('comments:comment_like', args=[self.slug, self.comment_id]),
+                        content_type='application/json', HTTP_AUTHORIZATION=self.auth_header)
+
+        get_likes_response = self.client.get(reverse('comments:comment_like', args=[
+            self.slug, self.comment_id]), HTTP_AUTHORIZATION=self.auth_header)
+        self.assertEqual(get_likes_response.status_code, 200)
+
+    def test_use_of_wrong_method_to_update_comment(self):
+        self.create_comment()
+        response = self.client.put(
+            reverse('comments:specific_comment', kwargs={
+                    'slug': self.slug, 'comment_pk': self.comment_id}),
+            data=json.dumps({'comment_body': 'it works'}), content_type='application/json')
+        expected_response ={
+                        "comment": {
+                            "error": "Method not implemented, use the patch method"
+                        }
+                    }
+        self.assertIn(response.data['error'],"Method not implemented, use the patch method")
