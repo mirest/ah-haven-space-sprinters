@@ -115,12 +115,12 @@ class ArticleLikes(models.Model):
 class Report(models.Model):
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE,
-        blank=True)
+        blank=True, related_name='reports')
     reporter = models.ForeignKey(
         Profile, on_delete=models.CASCADE,
         blank=True)
 
-    body = models.TextField()
+    reason = models.TextField()
 
     created_at = models.DateTimeField(auto_now_add=True)
 
