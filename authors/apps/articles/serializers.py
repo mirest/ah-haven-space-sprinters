@@ -9,7 +9,7 @@ from authors.apps.authentication.models import User
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.utilities.estimators import article_read_time
-from .models import Article, Rating, ArticleLikes
+from .models import Article, Rating, ArticleLikes, Report
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -154,3 +154,15 @@ class LikeArticleSerializer(serializers.ModelSerializer):
         model = ArticleLikes
         fields = ('like_article', 'article', 'user')
         read_only_fields = ('article', 'user')
+
+
+class ReportSerializer(serializers.ModelSerializer):
+
+    """serializer for reportting articles"""
+
+    reporter = UserProfileSerializer(read_only=True)
+    article = ArticleSerializer(read_only=True)
+
+    class Meta:
+        model = Report
+        fields = ('reporter', 'article', 'body',)

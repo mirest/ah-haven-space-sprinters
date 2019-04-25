@@ -7,7 +7,8 @@ from .views import (
     ShareTwitterView,
     ShareEmailView,
     RatingCreateRetrieveAPIView,
-    Tagview,
+    Tagview, ReportsAPIView,
+    GetReportsAPIView
 )
 
 from .like_views import ArticleLikesView
@@ -40,4 +41,9 @@ urlpatterns = [
     path('tags/', Tagview.as_view(), name='get_tags'),
     path('articles/<slug>/likes/',
          ArticleLikesView.as_view(), name='article_likes'),
+    path('articles/<slug>/report/',
+         ReportsAPIView.as_view(),
+         name='report'),
+    path('admin/report',
+         GetReportsAPIView.as_view(), name='get_reports')
 ]

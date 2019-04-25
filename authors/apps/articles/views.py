@@ -25,14 +25,14 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly
 )
 from rest_framework.response import Response
-
+from rest_framework.exceptions import PermissionDenied
 from config.settings import default
-from .models import Article, Rating
+from .models import Article, Rating, Report
 from .pagination import ArticleOffsetPagination
 from .renderers import (
     ArticleJSONRenderer, ArticleShareLinkRenderer)
 from .serializers import (
-    ArticleSerializer, EmailSerializer, RatingSerializer
+    ArticleSerializer, EmailSerializer, RatingSerializer, ReportSerializer
 )
 
 from authors.apps.profiles.models import Profile
@@ -253,3 +253,58 @@ class RatingCreateRetrieveAPIView(CreateAPIView, RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ReportsAPIView(ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ReportSerializer
+
+    @staticmethod
+    def can_create_report(reporter, article):
+        message, status_code = None, None
+
+        if reporter == article.author:
+            message = "you cannot report your own article"
+            status_code = status.HTTP_403_FORBIDDEN
+
+        elif Report.objects.filter(reporter=reporter, article=article):
+            message = "you already reported this article"
+            status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        return message, status_code
+
+    def post(self, request, slug):
+        article = get_object_or_404(Article, slug=slug)
+        reporter = get_object_or_404(Profile, user=request.user)
+
+        message, status_code = ReportsAPIView.can_create_report(
+            reporter, article)
+        if message:
+            return Response({"message": message}, status=status_code)
+
+        serializer = self.serializer_class(
+            data=request.data, context={'article': article})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(
+            reporter=reporter,
+            article=article,
+        )
+        return Response({
+            "msg": f"You have successfully reported article {article.slug}",
+            "report": serializer.data},
+            status=status.HTTP_201_CREATED)
+
+
+class GetReportsAPIView(ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ReportSerializer
+
+    def get(self, request):
+        user = request.user
+        if user.is_superuser:
+            reports = get_list_or_404(Report)
+            serializer_data = self.serializer_class(reports, many=True)
+            return Response({"articles": serializer_data.data},
+                            status=status.HTTP_200_OK)
+        raise PermissionDenied(
+            {"error": "permission denied login as admin"})

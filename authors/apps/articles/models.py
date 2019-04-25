@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from authors.apps.authentication.models import User
 from django.db.models import Avg, Sum, Count, Func
 from django.utils.text import slugify
-
+from ..profiles.models import Profile
 from authors.apps.articles.utilities import (
     get_like_status, get_likes_or_dislkes
 )
@@ -110,3 +110,19 @@ class ArticleLikes(models.Model):
         null=True, related_name="article_likes", blank=True)
     like_article = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class Report(models.Model):
+    article = models.ForeignKey(
+        Article, on_delete=models.CASCADE,
+        blank=True)
+    reporter = models.ForeignKey(
+        Profile, on_delete=models.CASCADE,
+        blank=True)
+
+    body = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.article.slug
