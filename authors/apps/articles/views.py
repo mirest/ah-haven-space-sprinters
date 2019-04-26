@@ -236,6 +236,7 @@ class RatingCreateRetrieveAPIView(CreateAPIView, RetrieveUpdateAPIView):
     serializer_class = RatingSerializer
     permission_classes = (IsAuthenticated, )
     renderer_classes = (ArticleJSONRenderer, )
+    http_method_names = ['post', 'get', 'patch']
 
     def post(self, request, slug):
         data = request.data
@@ -266,6 +267,7 @@ class RatingCreateRetrieveAPIView(CreateAPIView, RetrieveUpdateAPIView):
 class ReportsAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ReportSerializer
+    http_method_names = ['post']
 
     @staticmethod
     def can_create_report(reporter, article):
@@ -306,12 +308,18 @@ class ReportsAPIView(ListCreateAPIView):
 class GetReportsAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = AllReportsSerializer
+    http_method_names = ['get']
 
     def get(self, request):
         user = request.user
         if user.is_superuser:
-            reports = get_list_or_404(Article)
-            serializer_data = self.serializer_class(reports, many=True)
+            reports = get_list_or_404(Report)
+            article_reports = []
+            for article_report in reports:
+                report = get_object_or_404(
+                    Article, id=article_report.article_id)
+                article_reports.append(report)
+            serializer_data = self.serializer_class(article_reports, many=True)
             return Response({"articles": serializer_data.data},
                             status=status.HTTP_200_OK)
         raise PermissionDenied(

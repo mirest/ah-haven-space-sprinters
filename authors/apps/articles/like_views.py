@@ -38,6 +38,7 @@ class ArticleLikesView(RetrieveUpdateDestroyAPIView):
     renderer_classes = (ArticleLikesRenderer,)
     serializer_class = LikeArticleSerializer
     queryset = ArticleLikes.objects.all()
+    http_method_names = ['put', 'delete', 'get']
 
     def get_object(self, *args, **kwargs):
         slug = self.kwargs.get("slug")
